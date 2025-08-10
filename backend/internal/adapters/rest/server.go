@@ -8,13 +8,19 @@ import (
 type Server struct {
 	*UserHandler
 	*HealthHandler
+	*AuthzHandler
 }
 
 // NewServer creates a new server that implements api.ServerInterface
-func NewServer(userHandler *UserHandler, healthHandler *HealthHandler) api.ServerInterface {
+func NewServer(
+	userHandler *UserHandler,
+	healthHandler *HealthHandler,
+	authzHandler *AuthzHandler,
+) api.ServerInterface {
 	return &Server{
 		UserHandler:   userHandler,
 		HealthHandler: healthHandler,
+		AuthzHandler:  authzHandler,
 	}
 }
 
@@ -22,7 +28,7 @@ func NewServer(userHandler *UserHandler, healthHandler *HealthHandler) api.Serve
 var _ api.ServerInterface = (*Server)(nil)
 
 // The methods are already implemented by the embedded handlers:
-// - GetLiveness (from HealthHandler)
-// - GetReadiness (from HealthHandler)  
-// - CreateUser (from UserHandler)
-// - GetCurrentUser (from UserHandler)
+// - GetLiveness, GetReadiness (from HealthHandler)
+// - CreateUser, GetCurrentUser (from UserHandler)
+// - ListPermissions, ListRoles, CreateRole, GetRole, UpdateRole, DeleteRole,
+//   UpdateRolePermissions, GetUserRoles, AssignRoleToUser, RevokeRoleFromUser (from AuthzHandler)

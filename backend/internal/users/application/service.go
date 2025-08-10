@@ -2,17 +2,56 @@ package application
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"net/http"
 
+	"github.com/philly/arch-blog/backend/internal/platform/apperror"
 	"github.com/philly/arch-blog/backend/internal/users/domain"
 	"github.com/philly/arch-blog/backend/internal/users/ports"
 )
 
 var (
-	ErrUserAlreadyExists = errors.New("user already exists")
-	ErrUserNotFound      = errors.New("user not found")
-	ErrValidationFailed  = errors.New("validation failed")
+	ErrUserNotFound = apperror.New(
+		apperror.CodeNotFound,
+		apperror.BusinessCodeUserNotFound,
+		"user not found",
+		http.StatusNotFound,
+	)
+	ErrEmailAlreadyExists = apperror.New(
+		apperror.CodeConflict,
+		apperror.BusinessCodeEmailExists,
+		"email already registered",
+		http.StatusConflict,
+	)
+	ErrUsernameAlreadyExists = apperror.New(
+		apperror.CodeConflict,
+		apperror.BusinessCodeUsernameExists,
+		"username already taken",
+		http.StatusConflict,
+	)
+	ErrSupabaseIDAlreadyExists = apperror.New(
+		apperror.CodeConflict,
+		apperror.BusinessCodeSupabaseIDExists,
+		"user with this Supabase ID already exists",
+		http.StatusConflict,
+	)
+	ErrMissingSupabaseID = apperror.New(
+		apperror.CodeValidationFailed,
+		apperror.BusinessCodeMissingRequiredField,
+		"supabase ID is required",
+		http.StatusBadRequest,
+	).WithDetails(map[string]string{"field": "supabase_id"})
+	ErrMissingEmail = apperror.New(
+		apperror.CodeValidationFailed,
+		apperror.BusinessCodeMissingRequiredField,
+		"email is required",
+		http.StatusBadRequest,
+	).WithDetails(map[string]string{"field": "email"})
+	ErrMissingUsername = apperror.New(
+		apperror.CodeValidationFailed,
+		apperror.BusinessCodeMissingRequiredField,
+		"username is required",
+		http.StatusBadRequest,
+	).WithDetails(map[string]string{"field": "username"})
 )
 
 // CreateUserParams contains all parameters needed to create a new user
@@ -46,42 +85,45 @@ func NewUserService(repo ports.UserRepository) *UserService {
 func (s *UserService) CreateUser(ctx context.Context, params CreateUserParams) (*domain.User, error) {
 	// Validate required fields
 	if params.SupabaseID == "" {
-		return nil, fmt.Errorf("%w: supabase ID is required", ErrValidationFailed)
+		return nil, ErrMissingSupabaseID
 	}
 	if params.Email == "" {
-		return nil, fmt.Errorf("%w: email is required", ErrValidationFailed)
+		return nil, ErrMissingEmail
 	}
 	if params.Username == "" {
-		return nil, fmt.Errorf("%w: username is required", ErrValidationFailed)
+		return nil, ErrMissingUsername
 	}
 	// Check if user already exists with this Supabase ID
 	existingUser, err := s.repo.FindBySupabaseID(ctx, params.SupabaseID)
 	if err == nil && existingUser != nil {
-		return nil, fmt.Errorf("user with Supabase ID already exists: %w", ErrUserAlreadyExists)
+		return nil, ErrSupabaseIDAlreadyExists
 	}
 
 	// Check if username is already taken
 	exists, err := s.repo.ExistsByUsername(ctx, params.Username)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check username availability: %w", err)
+		return nil, apperror.Wrap(err, apperror.CodeInternalError, apperror.BusinessCodeGeneral,
+			"failed to check username availability", http.StatusInternalServerError)
 	}
 	if exists {
-		return nil, fmt.Errorf("username already taken: %w", ErrUserAlreadyExists)
+		return nil, ErrUsernameAlreadyExists
 	}
 
 	// Check if email is already registered
 	exists, err = s.repo.ExistsByEmail(ctx, params.Email)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check email availability: %w", err)
+		return nil, apperror.Wrap(err, apperror.CodeInternalError, apperror.BusinessCodeGeneral,
+			"failed to check email availability", http.StatusInternalServerError)
 	}
 	if exists {
-		return nil, fmt.Errorf("email already registered: %w", ErrUserAlreadyExists)
+		return nil, ErrEmailAlreadyExists
 	}
 
 	// Create new user domain object
 	user, err := domain.NewUser(params.SupabaseID, params.Email, params.Username)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create user: %w", err)
+		return nil, apperror.Wrap(err, apperror.CodeValidationFailed, apperror.BusinessCodeInvalidFormat,
+			"failed to create user", http.StatusBadRequest)
 	}
 
 	// Set optional fields
@@ -89,7 +131,8 @@ func (s *UserService) CreateUser(ctx context.Context, params CreateUserParams) (
 
 	// Persist to repository
 	if err := s.repo.Create(ctx, user); err != nil {
-		return nil, fmt.Errorf("failed to save user: %w", err)
+		return nil, apperror.Wrap(err, apperror.CodeInternalError, apperror.BusinessCodeGeneral,
+			"failed to save user", http.StatusInternalServerError)
 	}
 
 	return user, nil
@@ -98,7 +141,8 @@ func (s *UserService) CreateUser(ctx context.Context, params CreateUserParams) (
 func (s *UserService) GetUserBySupabaseID(ctx context.Context, supabaseID string) (*domain.User, error) {
 	user, err := s.repo.FindBySupabaseID(ctx, supabaseID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
+		return nil, apperror.Wrap(err, apperror.CodeInternalError, apperror.BusinessCodeGeneral,
+			"failed to find user", http.StatusInternalServerError)
 	}
 	if user == nil {
 		return nil, ErrUserNotFound
@@ -109,7 +153,8 @@ func (s *UserService) GetUserBySupabaseID(ctx context.Context, supabaseID string
 func (s *UserService) GetUserByID(ctx context.Context, id string) (*domain.User, error) {
 	user, err := s.repo.FindByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
+		return nil, apperror.Wrap(err, apperror.CodeInternalError, apperror.BusinessCodeGeneral,
+			"failed to find user", http.StatusInternalServerError)
 	}
 	if user == nil {
 		return nil, ErrUserNotFound
@@ -120,7 +165,8 @@ func (s *UserService) GetUserByID(ctx context.Context, id string) (*domain.User,
 func (s *UserService) UpdateUserProfile(ctx context.Context, params UpdateUserParams) (*domain.User, error) {
 	user, err := s.repo.FindByID(ctx, params.UserID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
+		return nil, apperror.Wrap(err, apperror.CodeInternalError, apperror.BusinessCodeGeneral,
+			"failed to find user", http.StatusInternalServerError)
 	}
 	if user == nil {
 		return nil, ErrUserNotFound
@@ -129,7 +175,8 @@ func (s *UserService) UpdateUserProfile(ctx context.Context, params UpdateUserPa
 	user.UpdateProfile(params.DisplayName, params.Bio, params.AvatarURL)
 
 	if err := s.repo.Update(ctx, user); err != nil {
-		return nil, fmt.Errorf("failed to update user: %w", err)
+		return nil, apperror.Wrap(err, apperror.CodeInternalError, apperror.BusinessCodeGeneral,
+			"failed to update user", http.StatusInternalServerError)
 	}
 
 	return user, nil

@@ -177,6 +177,181 @@ components:
         meta:
           $ref: '#/components/schemas/PaginationMeta'
 
+    # Authorization schemas
+    Permission:
+      type: object
+      required:
+        - id
+        - resource
+        - action
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        resource:
+          type: string
+          example: "posts"
+          description: "The resource this permission applies to"
+        action:
+          type: string
+          example: "create"
+          description: "The action allowed on the resource"
+        scope:
+          type: string
+          example: "own"
+          description: "The scope of the permission (own, any, or empty)"
+        description:
+          type: string
+          example: "Create new posts"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+
+    Role:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - isTemplate
+        - isSystem
+        - permissions
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          example: "editor"
+          description: "Unique name for the role"
+        description:
+          type: string
+          example: "Can create and edit content"
+        isTemplate:
+          type: boolean
+          example: false
+          description: "Whether this role is a template for creating other roles"
+        isSystem:
+          type: boolean
+          example: false
+          description: "Whether this is a system role that cannot be deleted"
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+
+    CreateRoleRequest:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: "^[a-z][a-z0-9_]*$"
+          example: "content_editor"
+          description: "Unique name for the role (lowercase, alphanumeric and underscore)"
+        description:
+          type: string
+          maxLength: 255
+          example: "Can create and edit blog content"
+        isTemplate:
+          type: boolean
+          default: false
+          example: false
+          description: "Whether this role should be a template"
+        permissions:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: "List of permission IDs to assign to this role"
+
+    UpdateRoleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: "^[a-z][a-z0-9_]*$"
+          example: "content_editor"
+        description:
+          type: string
+          maxLength: 255
+          example: "Can create and edit blog content"
+
+    RolePermissionsRequest:
+      type: object
+      required:
+        - permissions
+      properties:
+        permissions:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: "List of permission IDs to assign to the role"
+
+    AssignRoleRequest:
+      type: object
+      required:
+        - roleId
+      properties:
+        roleId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: "ID of the role to assign"
+
+    UserRole:
+      type: object
+      required:
+        - userId
+        - roleId
+        - role
+        - grantedAt
+      properties:
+        userId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        roleId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        role:
+          $ref: '#/components/schemas/Role'
+        grantedBy:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        grantedAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+
   responses:
     UnauthorizedError:
       description: Authentication information is missing or invalid
@@ -187,6 +362,16 @@ components:
           example:
             error: "unauthorized"
             message: "Missing or invalid authentication token"
+
+    ForbiddenError:
+      description: User lacks the required permissions for this operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "forbidden"
+            message: "You do not have permission to perform this action"
 
     NotFoundError:
       description: The requested resource was not found
@@ -335,8 +520,352 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  # Authorization endpoints
+  /permissions:
+    get:
+      tags:
+        - Authorization
+      summary: List all permissions
+      description: Returns a list of all available permissions in the system
+      operationId: listPermissions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of permissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Permission'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /roles:
+    get:
+      tags:
+        - Authorization
+      summary: List all roles
+      description: Returns a list of all roles in the system
+      operationId: listRoles
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Authorization
+      summary: Create a new role
+      description: Creates a new role with the specified permissions
+      operationId: createRole
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequest'
+      responses:
+        '201':
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /roles/{roleId}:
+    get:
+      tags:
+        - Authorization
+      summary: Get a role by ID
+      description: Returns a single role with its permissions
+      operationId: getRole
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: The ID of the role to retrieve
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Role retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - Authorization
+      summary: Update a role
+      description: Updates a role's name and description
+      operationId: updateRole
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: The ID of the role to update
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Authorization
+      summary: Delete a role
+      description: Deletes a role (cannot delete system roles)
+      operationId: deleteRole
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: The ID of the role to delete
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Role deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /roles/{roleId}/permissions:
+    put:
+      tags:
+        - Authorization
+      summary: Replace role permissions
+      description: Replaces all permissions for a role
+      operationId: updateRolePermissions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: The ID of the role to update permissions for
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RolePermissionsRequest'
+      responses:
+        '200':
+          description: Role permissions updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/{userId}/roles:
+    get:
+      tags:
+        - Authorization
+      summary: List user roles
+      description: Returns all roles assigned to a user
+      operationId: getUserRoles
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserRole'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Authorization
+      summary: Assign role to user
+      description: Assigns a role to a user
+      operationId: assignRoleToUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignRoleRequest'
+      responses:
+        '201':
+          description: Role assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRole'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/{userId}/roles/{roleId}:
+    delete:
+      tags:
+        - Authorization
+      summary: Revoke role from user
+      description: Removes a role from a user
+      operationId: revokeRoleFromUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user
+          schema:
+            type: string
+            format: uuid
+        - name: roleId
+          in: path
+          required: true
+          description: The ID of the role to revoke
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Role revoked successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
 tags:
   - name: System
     description: System health and monitoring
   - name: Users
     description: User management operations
+  - name: Authorization
+    description: Role and permission management

@@ -2,7 +2,6 @@ package rest
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -60,15 +59,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Call service to create user (validation happens in the service)
 	user, err := h.service.CreateUser(r.Context(), params)
 	if err != nil {
-		// Handle different error types
-		switch {
-		case errors.Is(err, application.ErrValidationFailed):
-			h.WriteJSONError(w, r, "validation_error", err.Error(), http.StatusBadRequest)
-		case errors.Is(err, application.ErrUserAlreadyExists):
-			h.WriteJSONError(w, r, "conflict", err.Error(), http.StatusConflict)
-		default:
-			h.WriteJSONError(w, r, "internal_server_error", "Failed to create user", http.StatusInternalServerError)
-		}
+		h.HandleError(w, r, err)
 		return
 	}
 
@@ -91,12 +82,7 @@ func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	// Get user from service
 	user, err := h.service.GetUserBySupabaseID(r.Context(), supabaseID)
 	if err != nil {
-		switch {
-		case errors.Is(err, application.ErrUserNotFound):
-			h.WriteJSONError(w, r, "not_found", "User not found", http.StatusNotFound)
-		default:
-			h.WriteJSONError(w, r, "internal_server_error", "Failed to get user", http.StatusInternalServerError)
-		}
+		h.HandleError(w, r, err)
 		return
 	}
 

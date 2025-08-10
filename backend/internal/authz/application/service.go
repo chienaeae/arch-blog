@@ -4,24 +4,92 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/philly/arch-blog/backend/internal/authz/domain"
 	"github.com/philly/arch-blog/backend/internal/authz/permission"
 	"github.com/philly/arch-blog/backend/internal/authz/ports"
+	"github.com/philly/arch-blog/backend/internal/platform/apperror"
 	"github.com/philly/arch-blog/backend/internal/platform/logger"
 	"github.com/philly/arch-blog/backend/internal/platform/ownership"
 )
 
-// Error definitions for service operations
+// Error definitions for service operations using AppError
 var (
-	ErrUserNotFound       = errors.New("user not found")
-	ErrRoleNotFound       = errors.New("role not found")
-	ErrPermissionNotFound = errors.New("permission not found")
-	ErrUnauthorized       = errors.New("unauthorized")
-	ErrInvalidPermission  = errors.New("invalid permission")
-	ErrResourceNotFound   = errors.New("resource not found")
+	ErrUserNotFound = apperror.New(
+		apperror.CodeNotFound,
+		apperror.BusinessCodeUserNotFound,
+		"user not found",
+		http.StatusNotFound,
+	)
+	ErrRoleNotFound = apperror.New(
+		apperror.CodeNotFound,
+		apperror.BusinessCodeRoleNotFound,
+		"role not found",
+		http.StatusNotFound,
+	)
+	ErrPermissionNotFound = apperror.New(
+		apperror.CodeNotFound,
+		apperror.BusinessCodePermissionNotFound,
+		"permission not found",
+		http.StatusNotFound,
+	)
+	ErrUnauthorized = apperror.New(
+		apperror.CodeUnauthorized,
+		apperror.BusinessCodePermissionDenied,
+		"unauthorized",
+		http.StatusUnauthorized,
+	)
+	ErrInvalidPermission = apperror.New(
+		apperror.CodeBadRequest,
+		apperror.BusinessCodeInvalidPermission,
+		"invalid permission",
+		http.StatusBadRequest,
+	)
+	ErrResourceNotFound = apperror.New(
+		apperror.CodeNotFound,
+		apperror.BusinessCodeGeneral,
+		"resource not found",
+		http.StatusNotFound,
+	)
+	ErrRoleNameExists = apperror.New(
+		apperror.CodeConflict,
+		apperror.BusinessCodeRoleNameExists,
+		"role name already exists",
+		http.StatusConflict,
+	)
+	ErrRoleAlreadyAssigned = apperror.New(
+		apperror.CodeConflict,
+		apperror.BusinessCodeRoleAlreadyAssigned,
+		"role already assigned to user",
+		http.StatusConflict,
+	)
+	ErrRoleNotAssigned = apperror.New(
+		apperror.CodeNotFound,
+		apperror.BusinessCodeRoleNotAssigned,
+		"role not assigned to user",
+		http.StatusNotFound,
+	)
+	ErrTemplateCannotAssign = apperror.New(
+		apperror.CodeBadRequest,
+		apperror.BusinessCodeTemplateCannotAssign,
+		"template roles cannot be assigned to users",
+		http.StatusBadRequest,
+	)
+	ErrCannotUpdateSystemRole = apperror.New(
+		apperror.CodeConflict,
+		apperror.BusinessCodeCannotUpdateSystem,
+		"cannot update system role",
+		http.StatusConflict,
+	)
+	ErrCannotDeleteSystemRole = apperror.New(
+		apperror.CodeConflict,
+		apperror.BusinessCodeCannotDeleteSystem,
+		"cannot delete system role",
+		http.StatusConflict,
+	)
 )
 
 // AuthzService implements the authorization business logic
@@ -319,10 +387,79 @@ func (s *AuthzService) ReplaceUserRoles(ctx context.Context, userID uuid.UUID, r
 	return nil
 }
 
+// ===== EXTENDED QUERY OPERATIONS =====
+
+// GetAllPermissions retrieves all permissions in the system
+func (s *AuthzService) GetAllPermissions(ctx context.Context) ([]*domain.Permission, error) {
+	permissions, err := s.repo.GetAllPermissions(ctx)
+	if err != nil {
+		s.logger.Error(ctx, "failed to get all permissions", "error", err)
+		return nil, fmt.Errorf("AuthzService.GetAllPermissions: %w", err)
+	}
+	return permissions, nil
+}
+
+// GetAllRoles retrieves all roles in the system
+func (s *AuthzService) GetAllRoles(ctx context.Context) ([]*domain.Role, error) {
+	roles, err := s.repo.GetAllRoles(ctx)
+	if err != nil {
+		s.logger.Error(ctx, "failed to get all roles", "error", err)
+		return nil, fmt.Errorf("AuthzService.GetAllRoles: %w", err)
+	}
+	return roles, nil
+}
+
+// GetRole retrieves a single role by ID
+func (s *AuthzService) GetRole(ctx context.Context, roleID uuid.UUID) (*domain.Role, error) {
+	role, err := s.repo.GetRoleByID(ctx, roleID)
+	if err != nil {
+		if errors.Is(err, ErrRoleNotFound) {
+			return nil, err
+		}
+		s.logger.Error(ctx, "failed to get role", "role_id", roleID, "error", err)
+		return nil, fmt.Errorf("AuthzService.GetRole: %w", err)
+	}
+	return role, nil
+}
+
+// GetUserRolesWithDetails retrieves all roles assigned to a user with full details
+func (s *AuthzService) GetUserRolesWithDetails(ctx context.Context, userID uuid.UUID) ([]*domain.UserRole, error) {
+	// Get user authorization data
+	userAuthz, err := s.repo.GetUserAuthz(ctx, userID)
+	if err != nil {
+		if errors.Is(err, ErrUserNotFound) {
+			return nil, err
+		}
+		s.logger.Error(ctx, "failed to get user roles", "user_id", userID, "error", err)
+		return nil, fmt.Errorf("AuthzService.GetUserRolesWithDetails: %w", err)
+	}
+
+	// Map roles to UserRole objects
+	userRoles := make([]*domain.UserRole, 0, len(userAuthz.Roles))
+	for _, role := range userAuthz.Roles {
+		userRole := &domain.UserRole{
+			UserID:    userID,
+			RoleID:    role.ID,
+			Role:      role,
+			GrantedAt: userAuthz.CreatedAt, // Using user creation time as fallback
+			GrantedBy: uuid.Nil,            // We don't track this currently
+		}
+		userRoles = append(userRoles, userRole)
+	}
+
+	return userRoles, nil
+}
+
 // ===== ROLE MANAGEMENT =====
 
 // CreateRole creates a new role
 func (s *AuthzService) CreateRole(ctx context.Context, name, description string, isTemplate bool) (*domain.Role, error) {
+	// Check if role name already exists
+	existingRole, err := s.repo.GetRoleByName(ctx, name)
+	if err == nil && existingRole != nil {
+		return nil, ErrRoleNameExists
+	}
+
 	var role *domain.Role
 	if isTemplate {
 		role = domain.NewTemplateRole(name, description)
@@ -379,6 +516,106 @@ func (s *AuthzService) CreateRoleFromTemplate(ctx context.Context, templateID uu
 	)
 
 	return newRole, nil
+}
+
+// UpdateRole updates a role's name and description
+func (s *AuthzService) UpdateRole(ctx context.Context, roleID uuid.UUID, name, description *string) (*domain.Role, error) {
+	// Get the existing role
+	role, err := s.repo.GetRoleByID(ctx, roleID)
+	if err != nil {
+		if errors.Is(err, ErrRoleNotFound) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("AuthzService.UpdateRole (get role): %w", err)
+	}
+
+	// Check if the role can be updated
+	if role.IsSystem {
+		return nil, ErrCannotUpdateSystemRole
+	}
+
+	// Update fields if provided
+	if name != nil && *name != "" {
+		// Check if new name already exists (if different from current)
+		if *name != role.Name {
+			existingRole, err := s.repo.GetRoleByName(ctx, *name)
+			if err == nil && existingRole != nil && existingRole.ID != roleID {
+				return nil, ErrRoleNameExists
+			}
+		}
+		role.Name = *name
+	}
+
+	if description != nil {
+		role.Description = *description
+	}
+
+	// Update the role
+	if err := s.repo.UpdateRole(ctx, role); err != nil {
+		s.logger.Error(ctx, "failed to update role",
+			"role_id", roleID,
+			"error", err,
+		)
+		return nil, fmt.Errorf("AuthzService.UpdateRole: %w", err)
+	}
+
+	s.logger.Info(ctx, "role updated",
+		"role_id", roleID,
+		"name", role.Name,
+	)
+
+	return role, nil
+}
+
+// UpdateRolePermissions replaces all permissions for a role
+func (s *AuthzService) UpdateRolePermissions(ctx context.Context, roleID uuid.UUID, permissionIDs []uuid.UUID) (*domain.Role, error) {
+	// Get the existing role
+	role, err := s.repo.GetRoleByID(ctx, roleID)
+	if err != nil {
+		if errors.Is(err, ErrRoleNotFound) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("AuthzService.UpdateRolePermissions (get role): %w", err)
+	}
+
+	// Check if the role's permissions can be updated
+	if role.IsSystem {
+		return nil, ErrCannotUpdateSystemRole
+	}
+
+	// Verify all permissions exist
+	for _, permID := range permissionIDs {
+		_, err := s.repo.GetPermissionByID(ctx, permID)
+		if err != nil {
+			if errors.Is(err, ErrPermissionNotFound) {
+				return nil, ErrPermissionNotFound
+			}
+			return nil, fmt.Errorf("AuthzService.UpdateRolePermissions (verify permission %s): %w", permID, err)
+		}
+	}
+
+	// Update the permissions
+	if err := s.repo.AssignPermissionsToRole(ctx, roleID, permissionIDs); err != nil {
+		s.logger.Error(ctx, "failed to update role permissions",
+			"role_id", roleID,
+			"permission_count", len(permissionIDs),
+			"error", err,
+		)
+		return nil, fmt.Errorf("AuthzService.UpdateRolePermissions: %w", err)
+	}
+
+	// Fetch the updated role
+	updatedRole, err := s.repo.GetRoleByID(ctx, roleID)
+	if err != nil {
+		return nil, fmt.Errorf("AuthzService.UpdateRolePermissions (get updated role): %w", err)
+	}
+
+	s.logger.Info(ctx, "role permissions updated",
+		"role_id", roleID,
+		"permission_count", len(permissionIDs),
+	)
+
+	return updatedRole, nil
 }
 
 // DeleteRole deletes a role

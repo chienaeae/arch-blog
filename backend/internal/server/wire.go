@@ -10,8 +10,12 @@ import (
 	"github.com/philly/arch-blog/backend/internal/adapters/auth"
 	"github.com/philly/arch-blog/backend/internal/adapters/postgres"
 	"github.com/philly/arch-blog/backend/internal/adapters/rest"
+	"github.com/philly/arch-blog/backend/internal/adapters/rest/middleware"
+	authzApp "github.com/philly/arch-blog/backend/internal/authz/application"
 	"github.com/philly/arch-blog/backend/internal/platform/logger"
+	"github.com/philly/arch-blog/backend/internal/platform/ownership"
 	"github.com/philly/arch-blog/backend/internal/users/application"
+	"github.com/philly/arch-blog/backend/internal/users/ports"
 )
 
 // InitializeApp creates a fully configured App with all dependencies
@@ -34,8 +38,12 @@ func InitializeApp(ctx context.Context) (*App, func(), error) {
 		// Repository providers (includes interface binding)
 		postgres.ProviderSet,
 		
+		// Platform services
+		ownership.ProviderSet,
+		
 		// Application services
 		application.ProviderSet,
+		authzApp.ProviderSet,
 		
 		// REST handlers
 		rest.ProviderSet,
@@ -43,6 +51,8 @@ func InitializeApp(ctx context.Context) (*App, func(), error) {
 		
 		// Auth middleware
 		provideJWTMiddleware,
+		provideAuthAdapter,
+		provideAuthorizationMiddleware,
 		
 		// HTTP Server
 		NewHTTPServer,
@@ -70,4 +80,14 @@ func provideLoggerConfig(config Config) logger.Config {
 		Environment: config.Environment,
 		LogLevel:    config.LogLevel,
 	}
+}
+
+// provideAuthAdapter creates the auth adapter middleware
+func provideAuthAdapter(userRepo ports.UserRepository, log logger.Logger) *middleware.AuthAdapter {
+	return middleware.NewAuthAdapter(userRepo, log)
+}
+
+// provideAuthorizationMiddleware creates the authorization middleware
+func provideAuthorizationMiddleware(authzService *authzApp.AuthzService, log logger.Logger) *middleware.AuthorizationMiddleware {
+	return middleware.NewAuthorizationMiddleware(authzService, log)
 }

@@ -1,0 +1,71 @@
+# Compiled binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/backend/cmd/api/api
+/backend/bin/
+
+# Test binaries
+*.test
+
+# Output of go coverage tool
+*.out
+
+# Go workspace files
+go.work.sum
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+*.log
+
+# Dependency directories
+vendor/
+
+# Build directories
+dist/
+build/
+
+# Docker volumes
+docker-data/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Frontend (placeholder)
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.next/
+/frontend/build/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.p12
+
+# Generated files
+/backend/internal/adapters/api/generated.go
+/backend/internal/server/wire_gen.go

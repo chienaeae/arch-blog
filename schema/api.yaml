@@ -1,0 +1,342 @@
+openapi: 3.0.3
+info:
+  title: Arch Blog API
+  description: A modern blog platform backend API
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@archblog.com
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+  - url: https://api.archblog.com/v1
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from Supabase Auth
+
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - username
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: "^[a-zA-Z0-9_-]+$"
+          example: "johndoe"
+        displayName:
+          type: string
+          maxLength: 100
+          example: "John Doe"
+        bio:
+          type: string
+          maxLength: 500
+          example: "Software developer and blogger"
+        avatarUrl:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+
+    NewUserRequest:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: "^[a-zA-Z0-9_-]+$"
+          example: "johndoe"
+          description: "Unique username for the user"
+        displayName:
+          type: string
+          maxLength: 100
+          example: "John Doe"
+          description: "Display name shown on posts and comments"
+        bio:
+          type: string
+          maxLength: 500
+          example: "Software developer and blogger"
+          description: "User biography or description"
+        avatarUrl:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+          description: "URL to user's avatar image"
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: "validation_error"
+        message:
+          type: string
+          example: "Invalid input data"
+        details:
+          type: object
+          additionalProperties: true
+
+    HealthStatus:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        version:
+          type: string
+          example: "1.0.0"
+        checks:
+          type: object
+          properties:
+            database:
+              type: string
+              enum: [up, down]
+
+    # Pagination schemas for future use
+    PaginationMeta:
+      type: object
+      required:
+        - totalItems
+        - totalPages
+        - currentPage
+        - itemsPerPage
+      properties:
+        totalItems:
+          type: integer
+          minimum: 0
+          example: 100
+        totalPages:
+          type: integer
+          minimum: 0
+          example: 10
+        currentPage:
+          type: integer
+          minimum: 1
+          example: 1
+        itemsPerPage:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 10
+
+    PaginatedUsers:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+  responses:
+    UnauthorizedError:
+      description: Authentication information is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "unauthorized"
+            message: "Missing or invalid authentication token"
+
+    NotFoundError:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "not_found"
+            message: "Resource not found"
+
+    ValidationError:
+      description: The request data is invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "validation_error"
+            message: "Invalid input data"
+            details:
+              username: "Username must be between 3 and 30 characters"
+
+    ConflictError:
+      description: The request conflicts with existing data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "conflict"
+            message: "Username already exists"
+
+    InternalServerError:
+      description: An unexpected error occurred
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "internal_server_error"
+            message: "An unexpected error occurred"
+
+paths:
+  /health/live:
+    get:
+      tags:
+        - System
+      summary: Liveness probe
+      description: |
+        Checks if the application process is alive and responding.
+        This is a lightweight check with no external dependencies.
+      operationId: getLiveness
+      security: []  # No authentication required
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Service is not responding
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /health/ready:
+    get:
+      tags:
+        - System
+      summary: Readiness probe
+      description: |
+        Checks if the application is ready to accept traffic.
+        This includes checking database connectivity and other critical dependencies.
+      operationId: getReadiness
+      security: []  # No authentication required
+      responses:
+        '200':
+          description: Service is ready to accept traffic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Service is not ready to accept traffic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Create user profile
+      description: |
+        Creates a new user profile for the authenticated user.
+        The email address is extracted from the JWT token to ensure it's verified.
+      operationId: createUser
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Get current user profile
+      description: Returns the profile of the authenticated user
+      operationId: getCurrentUser
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+tags:
+  - name: System
+    description: System health and monitoring
+  - name: Users
+    description: User management operations

@@ -47,7 +47,7 @@ func (m *AuthorizationMiddleware) RequirePermission(permission string) func(http
 			userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 			if !ok {
 				m.logger.Warn(ctx, "user ID not found in context")
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 				return
 			}
 			
@@ -59,7 +59,7 @@ func (m *AuthorizationMiddleware) RequirePermission(permission string) func(http
 					"permission", permission,
 					"error", err,
 				)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				WriteJSONError(w, ErrorCodeInternalServerError, "Failed to check permissions", http.StatusInternalServerError)
 				return
 			}
 			
@@ -68,7 +68,7 @@ func (m *AuthorizationMiddleware) RequirePermission(permission string) func(http
 					"user_id", userID,
 					"permission", permission,
 				)
-				http.Error(w, "Forbidden", http.StatusForbidden)
+				WriteJSONError(w, ErrorCodeForbidden, "Insufficient permissions", http.StatusForbidden)
 				return
 			}
 			
@@ -87,7 +87,7 @@ func (m *AuthorizationMiddleware) RequireAnyPermission(permissions ...string) fu
 			userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 			if !ok {
 				m.logger.Warn(ctx, "user ID not found in context")
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 				return
 			}
 			
@@ -99,7 +99,7 @@ func (m *AuthorizationMiddleware) RequireAnyPermission(permissions ...string) fu
 					"permissions", permissions,
 					"error", err,
 				)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				WriteJSONError(w, ErrorCodeInternalServerError, "Failed to check permissions", http.StatusInternalServerError)
 				return
 			}
 			
@@ -108,7 +108,7 @@ func (m *AuthorizationMiddleware) RequireAnyPermission(permissions ...string) fu
 					"user_id", userID,
 					"required_permissions", permissions,
 				)
-				http.Error(w, "Forbidden", http.StatusForbidden)
+				WriteJSONError(w, ErrorCodeForbidden, "Insufficient permissions", http.StatusForbidden)
 				return
 			}
 			
@@ -127,7 +127,7 @@ func (m *AuthorizationMiddleware) RequireAllPermissions(permissions ...string) f
 			userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 			if !ok {
 				m.logger.Warn(ctx, "user ID not found in context")
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 				return
 			}
 			
@@ -139,7 +139,7 @@ func (m *AuthorizationMiddleware) RequireAllPermissions(permissions ...string) f
 					"permissions", permissions,
 					"error", err,
 				)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				WriteJSONError(w, ErrorCodeInternalServerError, "Failed to check permissions", http.StatusInternalServerError)
 				return
 			}
 			
@@ -148,7 +148,7 @@ func (m *AuthorizationMiddleware) RequireAllPermissions(permissions ...string) f
 					"user_id", userID,
 					"required_permissions", permissions,
 				)
-				http.Error(w, "Forbidden", http.StatusForbidden)
+				WriteJSONError(w, ErrorCodeForbidden, "Insufficient permissions", http.StatusForbidden)
 				return
 			}
 			
@@ -167,7 +167,7 @@ func (m *AuthorizationMiddleware) RequireRole(role string) func(http.Handler) ht
 			userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 			if !ok {
 				m.logger.Warn(ctx, "user ID not found in context")
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 				return
 			}
 			
@@ -179,7 +179,7 @@ func (m *AuthorizationMiddleware) RequireRole(role string) func(http.Handler) ht
 					"role", role,
 					"error", err,
 				)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				WriteJSONError(w, ErrorCodeInternalServerError, "Failed to check permissions", http.StatusInternalServerError)
 				return
 			}
 			
@@ -188,7 +188,7 @@ func (m *AuthorizationMiddleware) RequireRole(role string) func(http.Handler) ht
 					"user_id", userID,
 					"role", role,
 				)
-				http.Error(w, "Forbidden", http.StatusForbidden)
+				WriteJSONError(w, ErrorCodeForbidden, "Insufficient permissions", http.StatusForbidden)
 				return
 			}
 			
@@ -208,7 +208,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 			userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 			if !ok {
 				m.logger.Warn(ctx, "user ID not found in context")
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 				return
 			}
 			
@@ -218,7 +218,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 				m.logger.Warn(ctx, "resource ID not found in URL",
 					"param", urlParam,
 				)
-				http.Error(w, "Bad request", http.StatusBadRequest)
+				WriteJSONError(w, ErrorCodeValidationError, "Invalid request parameters", http.StatusBadRequest)
 				return
 			}
 			
@@ -228,7 +228,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 					"resource_id", resourceIDStr,
 					"error", err,
 				)
-				http.Error(w, "Bad request", http.StatusBadRequest)
+				WriteJSONError(w, ErrorCodeValidationError, "Invalid request parameters", http.StatusBadRequest)
 				return
 			}
 			
@@ -244,7 +244,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 					"resource_id", resourceID,
 					"error", err,
 				)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				WriteJSONError(w, ErrorCodeInternalServerError, "Failed to check permissions", http.StatusInternalServerError)
 				return
 			}
 			
@@ -255,7 +255,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 					"resource_type", resourceType,
 					"resource_id", resourceID,
 				)
-				http.Error(w, "Forbidden", http.StatusForbidden)
+				WriteJSONError(w, ErrorCodeForbidden, "Insufficient permissions", http.StatusForbidden)
 				return
 			}
 			

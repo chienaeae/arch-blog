@@ -206,6 +206,29 @@ func (s *AuthzService) HasAnyPermission(ctx context.Context, userID uuid.UUID, p
 	return hasAny, nil
 }
 
+// Can is a simplified authorization check method that builds the permission ID
+// from resource and action, then checks if the user has permission.
+// This method is designed to be used by adapters that bridge to other modules.
+// 
+// For resource-specific checks (when resourceID is not nil), it will:
+// 1. Check for "resource:action:any" permission (global permission)
+// 2. If not found, check for "resource:action:own" with ownership verification
+// 
+// For non-resource checks (when resourceID is nil), it will:
+// - Check for "resource:action" permission
+func (s *AuthzService) Can(ctx context.Context, userID uuid.UUID, resource string, action string, resourceID *uuid.UUID) (bool, error) {
+	// Build the base permission ID
+	permissionID := fmt.Sprintf("%s:%s", resource, action)
+	
+	// If no resourceID, just check the basic permission
+	if resourceID == nil {
+		return s.HasPermission(ctx, userID, permissionID)
+	}
+	
+	// For resource-specific checks, use HasPermissionForResource
+	return s.HasPermissionForResource(ctx, userID, permissionID+":own", resource, *resourceID)
+}
+
 // HasAllPermissions checks if a user has all of the specified permissions
 func (s *AuthzService) HasAllPermissions(ctx context.Context, userID uuid.UUID, permissionIDs []string) (bool, error) {
 	// Validate all permissions first

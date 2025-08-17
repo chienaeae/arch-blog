@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/adapters/auth"
 	"github.com/philly/arch-blog/backend/internal/platform/logger"
 	"github.com/philly/arch-blog/backend/internal/users/ports"
 )
@@ -46,10 +45,10 @@ func (a *AuthAdapter) Middleware(next http.Handler) http.Handler {
 		ctx := r.Context()
 		
 		// Get the subject (Supabase ID) from JWT middleware
-		subject, ok := auth.GetUserID(ctx)
+		subject, ok := GetJWTUserID(ctx)
 		if !ok {
 			a.logger.Warn(ctx, "subject not found in context")
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 			return
 		}
 		
@@ -60,7 +59,7 @@ func (a *AuthAdapter) Middleware(next http.Handler) http.Handler {
 				"supabase_id", subject,
 				"error", err,
 			)
-			http.Error(w, "User not found", http.StatusNotFound)
+			WriteJSONError(w, ErrorCodeNotFound, "User profile not found", http.StatusNotFound)
 			return
 		}
 		
@@ -71,13 +70,13 @@ func (a *AuthAdapter) Middleware(next http.Handler) http.Handler {
 				"user_id", user.ID,
 				"error", err,
 			)
-			http.Error(w, "Invalid user ID format", http.StatusInternalServerError)
+			WriteJSONError(w, ErrorCodeInternalServerError, "Invalid user ID format", http.StatusInternalServerError)
 			return
 		}
 		ctx = SetUserID(ctx, userUUID)
 		
 		// Also preserve the email if needed
-		if email, ok := auth.GetUserEmail(ctx); ok {
+		if email, ok := GetJWTUserEmail(ctx); ok {
 			ctx = context.WithValue(ctx, UserEmailKey, email)
 		}
 		

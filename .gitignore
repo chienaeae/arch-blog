@@ -69,3 +69,6 @@ temp/
 # Generated files
 /backend/internal/adapters/api/generated.go
 /backend/internal/server/wire_gen.go
+
+# Cursor
+.cursor/

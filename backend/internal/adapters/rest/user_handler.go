@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/philly/arch-blog/backend/internal/adapters/api"
-	"github.com/philly/arch-blog/backend/internal/adapters/auth"
+	"github.com/philly/arch-blog/backend/internal/adapters/rest/middleware"
 	"github.com/philly/arch-blog/backend/internal/users/application"
 	"github.com/philly/arch-blog/backend/internal/users/domain"
 )
@@ -26,14 +26,17 @@ func NewUserHandler(base *BaseHandler, service *application.UserService) *UserHa
 
 // CreateUser implements the OpenAPI generated ServerInterface
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	// Extract user ID and email from context (set by JWT middleware)
-	supabaseID, ok := auth.GetUserID(r.Context())
+	// Extract JWT claims directly (not internal user ID) because this endpoint
+	// creates the user profile for the first time. The user doesn't exist in our
+	// database yet, so AuthAdapter cannot resolve to an internal ID.
+	// This is the ONLY handler that should use JWT claims directly.
+	supabaseID, ok := middleware.GetJWTUserID(r.Context())
 	if !ok {
 		h.WriteJSONError(w, r, "unauthorized", "User ID not found in context", http.StatusUnauthorized)
 		return
 	}
 
-	email, ok := auth.GetUserEmail(r.Context())
+	email, ok := middleware.GetJWTUserEmail(r.Context())
 	if !ok {
 		h.WriteJSONError(w, r, "unauthorized", "Email not found in context", http.StatusUnauthorized)
 		return
@@ -72,15 +75,12 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 // GetCurrentUser implements the OpenAPI generated ServerInterface
 func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	// Extract user ID from context
-	supabaseID, ok := auth.GetUserID(r.Context())
-	if !ok {
-		h.WriteJSONError(w, r, "unauthorized", "User ID not found in context", http.StatusUnauthorized)
-		return
-	}
+	// Extract internal user ID from context (set by AuthAdapter middleware)
+	// This is the canonical internal UUID, not the external Supabase ID
+	userID := h.GetUserIDFromContext(r)
 
-	// Get user from service
-	user, err := h.service.GetUserBySupabaseID(r.Context(), supabaseID)
+	// Get user from service using internal ID
+	user, err := h.service.GetUserByID(r.Context(), userID.String())
 	if err != nil {
 		h.HandleError(w, r, err)
 		return
@@ -95,7 +95,7 @@ func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 
 // Helper function to convert domain User to API User
 func domainUserToAPI(user *domain.User) api.User {
-	// Parse UUID string
+	// Parse UUID string (User.ID is a string, not uuid.UUID)
 	parsedUUID, _ := uuid.Parse(user.ID)
 	
 	return api.User{
@@ -108,20 +108,4 @@ func domainUserToAPI(user *domain.User) api.User {
 		CreatedAt:   user.CreatedAt,
 		UpdatedAt:   user.UpdatedAt,
 	}
-}
-
-// Helper function to convert *string to string
-func getStringValue(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
-}
-
-// Helper function to convert string to *string
-func stringToPointer(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
 }

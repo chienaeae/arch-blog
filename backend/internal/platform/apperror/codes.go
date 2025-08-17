@@ -50,4 +50,16 @@ const (
 	BusinessCodeInvalidFormat        BusinessCode = "INVALID_FORMAT"
 	BusinessCodeValueTooLong         BusinessCode = "VALUE_TOO_LONG"
 	BusinessCodeValueTooShort        BusinessCode = "VALUE_TOO_SHORT"
+	
+	// Post-specific business codes
+	BusinessCodePostNotFound          BusinessCode = "POST_NOT_FOUND"
+	BusinessCodeSlugAlreadyExists     BusinessCode = "SLUG_ALREADY_EXISTS"
+	BusinessCodeInvalidStatusTransition BusinessCode = "INVALID_STATUS_TRANSITION"
+	BusinessCodeCannotAddToTheme      BusinessCode = "CANNOT_ADD_TO_THEME"
+	
+	// Theme-specific business codes
+	BusinessCodeThemeNotFound         BusinessCode = "THEME_NOT_FOUND"
+	BusinessCodeThemeNameExists       BusinessCode = "THEME_NAME_ALREADY_EXISTS"
+	BusinessCodePostAlreadyInTheme    BusinessCode = "POST_ALREADY_IN_THEME"
+	BusinessCodePostNotInTheme        BusinessCode = "POST_NOT_IN_THEME"
 )

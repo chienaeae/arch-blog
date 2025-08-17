@@ -1,4 +1,4 @@
-package auth
+package middleware
 
 import (
 	"context"
@@ -20,11 +20,11 @@ var (
 	ErrMissingEmail     = errors.New("missing email in token")
 )
 
-type contextKey string
+type jwtContextKey string
 
 const (
-	UserIDContextKey    contextKey = "user_id"
-	UserEmailContextKey contextKey = "email"
+	JWTUserIDContextKey    jwtContextKey = "jwt_user_id"
+	JWTUserEmailContextKey jwtContextKey = "jwt_email"
 )
 
 type JWTMiddleware struct {
@@ -64,21 +64,21 @@ func (m *JWTMiddleware) Middleware(next http.Handler) http.Handler {
 		// Extract token from Authorization header
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			writeError(w, "unauthorized", ErrMissingToken.Error(), http.StatusUnauthorized)
+			WriteJSONError(w, ErrorCodeUnauthorized, ErrMissingToken.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		// Remove "Bearer " prefix
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		if tokenString == authHeader {
-			writeError(w, "unauthorized", "Invalid authorization header format", http.StatusUnauthorized)
+			WriteJSONError(w, ErrorCodeUnauthorized, "Invalid authorization header format", http.StatusUnauthorized)
 			return
 		}
 
 		// Get the cached key set
 		keySet, err := m.cache.Lookup(r.Context(), m.jwksEndpoint)
 		if err != nil {
-			writeError(w, "internal_server_error", fmt.Sprintf("Failed to get JWKS: %v", err), http.StatusInternalServerError)
+			WriteJSONError(w, ErrorCodeInternalServerError, fmt.Sprintf("Failed to get JWKS: %v", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -92,10 +92,10 @@ func (m *JWTMiddleware) Middleware(next http.Handler) http.Handler {
 		if err != nil {
 			// Check if token is expired
 			if err.Error() == "exp not satisfied" || strings.Contains(err.Error(), "expired") {
-				writeError(w, "token_expired", ErrTokenExpired.Error(), http.StatusUnauthorized)
+				WriteJSONError(w, ErrorCodeTokenExpired, ErrTokenExpired.Error(), http.StatusUnauthorized)
 				return
 			}
-			writeError(w, "invalid_token", ErrInvalidToken.Error(), http.StatusUnauthorized)
+			WriteJSONError(w, ErrorCodeInvalidToken, ErrInvalidToken.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -103,52 +103,45 @@ func (m *JWTMiddleware) Middleware(next http.Handler) http.Handler {
 		var subject string
 		err = token.Get("sub", &subject)
 		if err != nil {
-			writeError(w, "invalid_token", ErrMissingSubject.Error(), http.StatusUnauthorized)
+			WriteJSONError(w, ErrorCodeInvalidToken, ErrMissingSubject.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		var email string
 		err = token.Get("email", &email)
 		if err != nil {
-			writeError(w, "invalid_token", ErrMissingEmail.Error(), http.StatusUnauthorized)
+			WriteJSONError(w, ErrorCodeInvalidToken, ErrMissingEmail.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		// Convert to strings
 		if subject == "" {
-			writeError(w, "invalid_token", "Invalid subject format", http.StatusUnauthorized)
+			WriteJSONError(w, ErrorCodeInvalidToken, "Invalid subject format", http.StatusUnauthorized)
 			return
 		}
 
 		if email == "" {
-			writeError(w, "invalid_token", "Invalid email format", http.StatusUnauthorized)
+			WriteJSONError(w, ErrorCodeInvalidToken, "Invalid email format", http.StatusUnauthorized)
 			return
 		}
 
 		// Add user info to context
-		ctx := context.WithValue(r.Context(), UserIDContextKey, subject)
-		ctx = context.WithValue(ctx, UserEmailContextKey, email)
+		ctx := context.WithValue(r.Context(), JWTUserIDContextKey, subject)
+		ctx = context.WithValue(ctx, JWTUserEmailContextKey, email)
 
 		// Continue with the request
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-// writeError writes a JSON error response that matches our OpenAPI specification
-func writeError(w http.ResponseWriter, code string, message string, statusCode int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	_, _ = fmt.Fprintf(w, `{"error": "%s", "message": "%s"}`, code, message)
-}
-
-// GetUserID extracts the user ID from the request context
-func GetUserID(ctx context.Context) (string, bool) {
-	userID, ok := ctx.Value(UserIDContextKey).(string)
+// GetJWTUserID extracts the user ID from the request context set by JWT middleware
+func GetJWTUserID(ctx context.Context) (string, bool) {
+	userID, ok := ctx.Value(JWTUserIDContextKey).(string)
 	return userID, ok
 }
 
-// GetUserEmail extracts the user email from the request context
-func GetUserEmail(ctx context.Context) (string, bool) {
-	email, ok := ctx.Value(UserEmailContextKey).(string)
+// GetJWTUserEmail extracts the user email from the request context set by JWT middleware
+func GetJWTUserEmail(ctx context.Context) (string, bool) {
+	email, ok := ctx.Value(JWTUserEmailContextKey).(string)
 	return email, ok
 }

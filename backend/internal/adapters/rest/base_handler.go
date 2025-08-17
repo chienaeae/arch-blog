@@ -105,3 +105,26 @@ func (h *BaseHandler) GetUserIDFromContext(r *http.Request) uuid.UUID {
 	// not a user error.
 	return r.Context().Value(middleware.UserIDKey).(uuid.UUID)
 }
+
+// GetUserEmailFromContext retrieves the user's email from the context.
+// It assumes the middleware has already set the email if available.
+func (h *BaseHandler) GetUserEmailFromContext(r *http.Request) (string, bool) {
+	email, ok := r.Context().Value(middleware.UserEmailKey).(string)
+	return email, ok
+}
+
+// Helper function to convert string to *string
+func stringToPointer(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+// Helper function to convert *string to string
+func getStringValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}

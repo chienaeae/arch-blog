@@ -1,12 +1,12 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/philly/arch-blog/backend/internal/adapters/api"
-	"github.com/philly/arch-blog/backend/internal/adapters/auth"
 	"github.com/philly/arch-blog/backend/internal/adapters/rest/middleware"
 	"github.com/philly/arch-blog/backend/internal/platform/logger"
 )
@@ -14,26 +14,25 @@ import (
 // NewHTTPServer creates and configures the HTTP server with all routes
 func NewHTTPServer(
 	config Config,
-	jwtMiddleware *auth.JWTMiddleware,
 	server api.ServerInterface,
+	jwtMiddleware *middleware.JWTMiddleware,
 	authzMiddleware *middleware.AuthorizationMiddleware,
 	authAdapter *middleware.AuthAdapter,
 	log logger.Logger,
 ) *http.Server {
 
-	// Create a modern Go 1.22+ ServeMux with method-based routing
-	mux := http.NewServeMux()
-
-	// Create middleware chain for different endpoint groups
-	// Note: Middleware is applied in the order: last added = first executed
-	
-	// Public endpoints (no auth)
-	// publicMiddlewares := []api.MiddlewareFunc{} // Currently unused but may be needed for future public endpoints
+	// Create chi router
+	r := chi.NewRouter()
 
 	// Protected endpoints (JWT auth required)
 	protectedMiddlewares := []api.MiddlewareFunc{
 		wrapMiddleware(jwtMiddleware.Middleware),
 		wrapMiddleware(authAdapter.Middleware), // Convert Supabase ID to internal UUID
+	}
+	
+	// JWT-only endpoints (no AuthAdapter because user doesn't exist yet)
+	jwtOnlyMiddlewares := []api.MiddlewareFunc{
+		wrapMiddleware(jwtMiddleware.Middleware),
 	}
 
 	// Admin endpoints (JWT auth + specific permissions)
@@ -44,49 +43,79 @@ func NewHTTPServer(
 		)
 	}
 
-	// Create the API handler with oapi-codegen's routing
-	// This handles all the path parameter extraction automatically
-	apiHandler := api.HandlerWithOptions(server, api.StdHTTPServerOptions{
-		BaseURL:    "/api/v1",
-		BaseRouter: mux,
-		Middlewares: []api.MiddlewareFunc{
-			// Default middleware that applies to all routes
-			// We'll override this per-route below
-		},
-	})
-
-	// Now we need to wrap specific routes with their appropriate middleware
-	// Since oapi-codegen doesn't support per-route middleware directly,
-	// we'll create a wrapper that applies middleware based on the path
-
-	wrappedHandler := &middlewareRouter{
-		inner:                 apiHandler,
-		publicPaths:           map[string]bool{
-			"/api/v1/health/live":  true,
-			"/api/v1/health/ready": true,
-		},
-		protectedMiddlewares:  protectedMiddlewares,
-		permissionMiddlewares: map[string][]api.MiddlewareFunc{
-			// Permission endpoints
-			"GET /api/v1/permissions": createAuthzMiddleware("authz:permissions:read"),
-			
-			// Role management
-			"GET /api/v1/roles":                       createAuthzMiddleware("authz:roles:read"),
-			"POST /api/v1/roles":                      createAuthzMiddleware("authz:roles:create"),
-			"GET /api/v1/roles/*":                     createAuthzMiddleware("authz:roles:read"),
-			"PUT /api/v1/roles/*":                     createAuthzMiddleware("authz:roles:update"),
-			"DELETE /api/v1/roles/*":                  createAuthzMiddleware("authz:roles:delete"),
-			"PUT /api/v1/roles/*/permissions":         createAuthzMiddleware("authz:roles:update"),
-			
-			// User role management
-			"GET /api/v1/users/*/roles":               createAuthzMiddleware("authz:users:read"),
-			"POST /api/v1/users/*/roles":              createAuthzMiddleware("authz:users:assign"),
-			"DELETE /api/v1/users/*/roles/*":          createAuthzMiddleware("authz:users:revoke"),
-		},
+	// Ownership-based endpoints (JWT auth + ownership check)
+	// For endpoints that require the user to own the resource
+	createOwnershipMiddleware := func(resource string, urlParam string, action string) []api.MiddlewareFunc {
+		return append(protectedMiddlewares,
+			wrapMiddleware(authzMiddleware.RequireOwnership(resource, urlParam, action)),
+		)
 	}
 
+	// Build route pattern maps for chi
+	publicPatterns := map[string]bool{
+		"GET /api/v1/health/live":  true,
+		"GET /api/v1/health/ready": true,
+
+		// Public posts endpoints (read-only)
+		"GET /api/v1/posts":             true,
+		"GET /api/v1/posts/{id}":        true, // Get by ID
+		"GET /api/v1/posts/slug/{slug}": true, // Get by slug
+
+		// Public themes endpoints (read-only)
+		"GET /api/v1/themes":               true,
+		"GET /api/v1/themes/{id}":          true, // Get by ID
+		"GET /api/v1/themes/slug/{slug}":   true, // Get by slug
+		"GET /api/v1/themes/{id}/articles": true, // Get theme with articles
+	}
+
+	permissionPatterns := map[string][]api.MiddlewareFunc{
+		// User creation (JWT only, no AuthAdapter since user doesn't exist yet)
+		"POST /api/v1/users": jwtOnlyMiddlewares,
+
+		// Permission endpoints
+		"GET /api/v1/permissions": createAuthzMiddleware("authz:permissions:read"),
+
+		// Role management
+		"GET /api/v1/roles":                  createAuthzMiddleware("authz:roles:read"),
+		"POST /api/v1/roles":                 createAuthzMiddleware("authz:roles:create"),
+		"GET /api/v1/roles/{id}":             createAuthzMiddleware("authz:roles:read"),
+		"PUT /api/v1/roles/{id}":             createAuthzMiddleware("authz:roles:update"),
+		"DELETE /api/v1/roles/{id}":          createAuthzMiddleware("authz:roles:delete"),
+		"PUT /api/v1/roles/{id}/permissions": createAuthzMiddleware("authz:roles:update"),
+
+		// User role management
+		"GET /api/v1/users/{id}/roles":            createAuthzMiddleware("authz:users:read"),
+		"POST /api/v1/users/{id}/roles":           createAuthzMiddleware("authz:users:assign"),
+		"DELETE /api/v1/users/{id}/roles/{roleId}": createAuthzMiddleware("authz:users:revoke"),
+
+		// Posts endpoints (mutation requires authorization)
+		"POST /api/v1/posts":                createAuthzMiddleware("posts:create"),
+		"PUT /api/v1/posts/{id}":           createOwnershipMiddleware("posts", "id", "update"),
+		"POST /api/v1/posts/{id}/publish":  createOwnershipMiddleware("posts", "id", "publish"),
+		"POST /api/v1/posts/{id}/unpublish": createOwnershipMiddleware("posts", "id", "publish"),
+		"POST /api/v1/posts/{id}/archive":  createOwnershipMiddleware("posts", "id", "archive"),
+		"DELETE /api/v1/posts/{id}":        createOwnershipMiddleware("posts", "id", "delete"),
+
+		// Themes endpoints (mutation requires authorization)
+		"POST /api/v1/themes":                        createAuthzMiddleware("themes:create"),
+		"PUT /api/v1/themes/{id}":                    createOwnershipMiddleware("themes", "id", "update"),
+		"POST /api/v1/themes/{id}/activate":          createOwnershipMiddleware("themes", "id", "update"),
+		"POST /api/v1/themes/{id}/deactivate":        createOwnershipMiddleware("themes", "id", "update"),
+		"POST /api/v1/themes/{id}/articles":          createOwnershipMiddleware("themes", "id", "update"),
+		"DELETE /api/v1/themes/{id}/articles/{postId}": createOwnershipMiddleware("themes", "id", "update"),
+		"PUT /api/v1/themes/{id}/articles":           createOwnershipMiddleware("themes", "id", "update"),
+	}
+
+	// Register API routes on chi router with a route-aware middleware
+	_ = api.HandlerWithOptions(server, api.ChiServerOptions{
+		BaseURL:    "/api/v1",
+		BaseRouter: r,
+		Middlewares: []api.MiddlewareFunc{
+			routeAwareChiMiddleware(publicPatterns, permissionPatterns, protectedMiddlewares),
+		},
+	})
 	// Wrap with observability middleware
-	handler := withObservability(wrappedHandler, log)
+	handler := withObservability(r, log)
 
 	// Create and return HTTP server
 	return &http.Server{
@@ -98,64 +127,49 @@ func NewHTTPServer(
 	}
 }
 
-// middlewareRouter applies different middleware based on the request path
-type middlewareRouter struct {
-	inner                 http.Handler
-	publicPaths           map[string]bool
-	protectedMiddlewares  []api.MiddlewareFunc
-	permissionMiddlewares map[string][]api.MiddlewareFunc
-}
+// routeAwareChiMiddleware applies auth middlewares based on matched chi route pattern
+func routeAwareChiMiddleware(
+	public map[string]bool,
+	specific map[string][]api.MiddlewareFunc,
+	defaults []api.MiddlewareFunc,
+) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// chi exposes the current route pattern via RouteContext
+			routeCtx := chi.RouteContext(r.Context())
+			method := r.Method
+			if method == "HEAD" {
+				method = "GET"
+			}
+			pattern := ""
+			if routeCtx != nil {
+				pattern = method + " " + routeCtx.RoutePattern()
+			}
 
-func (m *middlewareRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	
-	// Check if it's a public endpoint
-	if m.publicPaths[path] {
-		m.inner.ServeHTTP(w, r)
-		return
-	}
-	
-	// Check for permission-specific endpoints
-	// We need to match patterns with wildcards
-	for pattern, middlewares := range m.permissionMiddlewares {
-		if matchesPattern(r.Method+" "+path, pattern) {
-			handler := m.inner
-			// Apply middlewares in reverse order
-			for i := len(middlewares) - 1; i >= 0; i-- {
-				handler = middlewares[i](handler)
+			// Public endpoints bypass
+			if public[pattern] || public[method+" "+r.URL.Path] {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// Permission/ownership specific endpoints
+			if middlewares, ok := specific[pattern]; ok {
+				handler := next
+				for i := len(middlewares) - 1; i >= 0; i-- {
+					handler = middlewares[i](handler)
+				}
+				handler.ServeHTTP(w, r)
+				return
+			}
+
+			// Default protected endpoints
+			handler := next
+			for i := len(defaults) - 1; i >= 0; i-- {
+				handler = defaults[i](handler)
 			}
 			handler.ServeHTTP(w, r)
-			return
-		}
+		})
 	}
-	
-	// Default: apply protected middleware for all other endpoints
-	handler := m.inner
-	for i := len(m.protectedMiddlewares) - 1; i >= 0; i-- {
-		handler = m.protectedMiddlewares[i](handler)
-	}
-	handler.ServeHTTP(w, r)
-}
-
-// matchesPattern checks if a path matches a pattern with wildcards
-func matchesPattern(path, pattern string) bool {
-	// Simple pattern matching with * as wildcard
-	// This is a basic implementation - could be enhanced with more sophisticated matching
-	if pattern == path {
-		return true
-	}
-	
-	// Handle wildcard patterns
-	// Convert pattern to a simple regex-like check
-	// For example: "GET /api/v1/roles/*" matches "GET /api/v1/roles/123"
-	if len(pattern) > 0 && pattern[len(pattern)-1] == '*' {
-		prefix := pattern[:len(pattern)-1]
-		return len(path) >= len(prefix) && path[:len(prefix)] == prefix
-	}
-	
-	// Handle middle wildcards like /users/*/roles
-	// This is a simplified version - a production system might use proper pattern matching
-	return false
 }
 
 // wrapMiddleware converts a standard middleware to oapi-codegen's MiddlewareFunc
@@ -169,29 +183,26 @@ func wrapMiddleware(mw func(http.Handler) http.Handler) api.MiddlewareFunc {
 func withObservability(handler http.Handler, log logger.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		
-		// Create a response writer wrapper to capture status code
-		wrapped := &responseWriter{
-			ResponseWriter: w,
-			statusCode:     http.StatusOK,
-		}
+
+		// Use chi's response writer wrapper to capture status code and bytes written
+		wrr := chimw.NewWrapResponseWriter(w, r.ProtoMajor)
 
 		// Process the request
-		handler.ServeHTTP(wrapped, r)
+		handler.ServeHTTP(wrr, r)
 
 		// Log request details
 		duration := time.Since(start)
-		
+
 		// Extract user ID if available for better tracing
 		var userID string
 		if uid, ok := middleware.GetUserID(r.Context()); ok {
 			userID = uid.String()
 		}
-		
+
 		log.Info(r.Context(), "HTTP request completed",
 			"method", r.Method,
 			"path", r.URL.Path,
-			"status", wrapped.statusCode,
+			"status", wrr.Status(),
 			"duration_ms", duration.Milliseconds(),
 			"remote_addr", r.RemoteAddr,
 			"user_agent", r.UserAgent(),
@@ -199,38 +210,6 @@ func withObservability(handler http.Handler, log logger.Logger) http.Handler {
 		)
 
 		// Here you could also emit metrics to Prometheus, DataDog, etc.
-		// metrics.RecordHTTPRequest(r.Method, r.URL.Path, wrapped.statusCode, duration)
+		// metrics.RecordHTTPRequest(r.Method, r.URL.Path, wrr.Status(), duration)
 	})
-}
-
-// responseWriter wraps http.ResponseWriter to capture the status code
-type responseWriter struct {
-	http.ResponseWriter
-	statusCode int
-	written    bool
-}
-
-// WriteHeader captures the status code
-func (rw *responseWriter) WriteHeader(code int) {
-	if !rw.written {
-		rw.statusCode = code
-		rw.ResponseWriter.WriteHeader(code)
-		rw.written = true
-	}
-}
-
-// Write ensures we capture the status code even if WriteHeader wasn't called
-func (rw *responseWriter) Write(b []byte) (int, error) {
-	if !rw.written {
-		rw.written = true
-	}
-	return rw.ResponseWriter.Write(b)
-}
-
-// GetUserID is a helper to extract user ID from context for logging
-func GetUserID(ctx context.Context) (string, bool) {
-	if uid, ok := middleware.GetUserID(ctx); ok {
-		return uid.String(), true
-	}
-	return "", false
 }

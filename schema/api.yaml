@@ -352,6 +352,368 @@ components:
           format: date-time
           example: "2024-01-01T00:00:00Z"
 
+    # Posts schemas
+    Post:
+      type: object
+      required:
+        - id
+        - title
+        - content
+        - excerpt
+        - slug
+        - status
+        - authorId
+        - viewCount
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: "Introduction to Hexagonal Architecture"
+        content:
+          type: string
+          minLength: 1
+          example: "<p>This post explains the principles of hexagonal architecture...</p>"
+        excerpt:
+          type: string
+          maxLength: 500
+          example: "A comprehensive guide to understanding hexagonal architecture"
+        slug:
+          type: string
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          maxLength: 255
+          example: "introduction-to-hexagonal-architecture"
+        status:
+          type: string
+          enum: [draft, published, archived]
+          example: "published"
+        authorId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        viewCount:
+          type: integer
+          minimum: 0
+          example: 1234
+        publishedAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+
+    PostSummary:
+      type: object
+      required:
+        - id
+        - title
+        - excerpt
+        - slug
+        - status
+        - authorId
+        - viewCount
+        - createdAt
+        - publishedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        title:
+          type: string
+          example: "Introduction to Hexagonal Architecture"
+        excerpt:
+          type: string
+          example: "A comprehensive guide to understanding hexagonal architecture"
+        slug:
+          type: string
+          example: "introduction-to-hexagonal-architecture"
+        status:
+          type: string
+          enum: [draft, published, archived]
+          example: "published"
+        authorId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        viewCount:
+          type: integer
+          minimum: 0
+          example: 1234
+        publishedAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+
+    CreatePostRequest:
+      type: object
+      required:
+        - title
+        - content
+        - excerpt
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: "Introduction to Hexagonal Architecture"
+        content:
+          type: string
+          minLength: 1
+          example: "<p>This post explains the principles of hexagonal architecture...</p>"
+          description: "HTML content of the post (will be sanitized)"
+        excerpt:
+          type: string
+          maxLength: 500
+          example: "A comprehensive guide to understanding hexagonal architecture"
+
+    UpdatePostRequest:
+      type: object
+      required:
+        - title
+        - content
+        - excerpt
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: "Updated: Introduction to Hexagonal Architecture"
+        content:
+          type: string
+          minLength: 1
+          example: "<p>This updated post explains...</p>"
+        excerpt:
+          type: string
+          maxLength: 500
+          example: "An updated guide to hexagonal architecture"
+
+    PaginatedPosts:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostSummary'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # Themes schemas
+    Theme:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - slug
+        - curatorId
+        - isActive
+        - articleCount
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Best Practices in Software Architecture"
+        description:
+          type: string
+          maxLength: 500
+          example: "A curated collection of posts about software architecture best practices"
+        slug:
+          type: string
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          maxLength: 100
+          example: "best-practices-software-architecture"
+        curatorId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        isActive:
+          type: boolean
+          example: true
+        articleCount:
+          type: integer
+          minimum: 0
+          example: 5
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+
+    ThemeWithArticles:
+      allOf:
+        - $ref: '#/components/schemas/Theme'
+        - type: object
+          required:
+            - articles
+          properties:
+            articles:
+              type: array
+              items:
+                $ref: '#/components/schemas/ThemeArticle'
+
+    ThemeArticle:
+      type: object
+      required:
+        - postId
+        - position
+        - addedBy
+        - addedAt
+      properties:
+        postId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        position:
+          type: integer
+          minimum: 0
+          example: 0
+        addedBy:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        addedAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+
+    ThemeSummary:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - slug
+        - curatorId
+        - isActive
+        - articleCount
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          example: "Best Practices in Software Architecture"
+        description:
+          type: string
+          example: "A curated collection of posts about software architecture best practices"
+        slug:
+          type: string
+          example: "best-practices-software-architecture"
+        curatorId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        isActive:
+          type: boolean
+          example: true
+        articleCount:
+          type: integer
+          minimum: 0
+          example: 5
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+
+    CreateThemeRequest:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Best Practices in Software Architecture"
+        description:
+          type: string
+          maxLength: 500
+          example: "A curated collection of posts about software architecture best practices"
+
+    UpdateThemeRequest:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Updated: Best Practices"
+        description:
+          type: string
+          maxLength: 500
+          example: "An updated collection of best practices"
+
+    AddArticleRequest:
+      type: object
+      required:
+        - postId
+      properties:
+        postId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+
+    ReorderArticlesRequest:
+      type: object
+      required:
+        - postIds
+      properties:
+        postIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          example: ["123e4567-e89b-12d3-a456-426614174000", "987e6543-e21b-12d3-a456-426614174000"]
+
+    PaginatedThemes:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ThemeSummary'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
   responses:
     UnauthorizedError:
       description: Authentication information is missing or invalid
@@ -603,7 +965,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /roles/{roleId}:
+  /roles/{id}:
     get:
       tags:
         - Authorization
@@ -613,7 +975,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: roleId
+        - name: id
           in: path
           required: true
           description: The ID of the role to retrieve
@@ -645,7 +1007,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: roleId
+        - name: id
           in: path
           required: true
           description: The ID of the role to update
@@ -687,7 +1049,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: roleId
+        - name: id
           in: path
           required: true
           description: The ID of the role to delete
@@ -708,7 +1070,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /roles/{roleId}/permissions:
+  /roles/{id}/permissions:
     put:
       tags:
         - Authorization
@@ -718,7 +1080,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: roleId
+        - name: id
           in: path
           required: true
           description: The ID of the role to update permissions for
@@ -749,7 +1111,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /users/{userId}/roles:
+  /users/{id}/roles:
     get:
       tags:
         - Authorization
@@ -759,7 +1121,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: userId
+        - name: id
           in: path
           required: true
           description: The ID of the user
@@ -793,7 +1155,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: userId
+        - name: id
           in: path
           required: true
           description: The ID of the user
@@ -826,7 +1188,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /users/{userId}/roles/{roleId}:
+  /users/{id}/roles/{roleId}:
     delete:
       tags:
         - Authorization
@@ -836,7 +1198,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: userId
+        - name: id
           in: path
           required: true
           description: The ID of the user
@@ -862,6 +1224,740 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  # Posts endpoints
+  /posts:
+    get:
+      tags:
+        - Posts
+      summary: List posts
+      description: Returns a paginated list of posts
+      operationId: listPosts
+      security: []  # Public endpoint
+      parameters:
+        - name: status
+          in: query
+          description: Filter by post status
+          schema:
+            type: string
+            enum: [draft, published, archived]
+        - name: authorId
+          in: query
+          description: Filter by author ID
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Page number (1-based)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          description: Field to sort by
+          schema:
+            type: string
+            enum: [created_at, updated_at, published_at, title, view_count]
+            default: created_at
+        - name: sortOrder
+          in: query
+          description: Sort direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: List of posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPosts'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Posts
+      summary: Create a new post
+      description: Creates a new blog post (initially in draft status)
+      operationId: createPost
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostRequest'
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /posts/{id}:
+    get:
+      tags:
+        - Posts
+      summary: Get a post by ID
+      description: Returns a single post
+      operationId: getPost
+      security: []  # Public endpoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - Posts
+      summary: Update a post
+      description: Updates an existing post
+      operationId: updatePost
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post to update
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePostRequest'
+      responses:
+        '200':
+          description: Post updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Posts
+      summary: Delete a post
+      description: Permanently deletes a post
+      operationId: deletePost
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post to delete
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Post deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /posts/slug/{slug}:
+    get:
+      tags:
+        - Posts
+      summary: Get a post by slug
+      description: Returns a single post by its URL slug
+      operationId: getPostBySlug
+      security: []  # Public endpoint
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: The URL slug of the post
+          schema:
+            type: string
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /posts/{id}/publish:
+    post:
+      tags:
+        - Posts
+      summary: Publish a post
+      description: Transitions a post from draft to published status
+      operationId: publishPost
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post to publish
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post published successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /posts/{id}/unpublish:
+    post:
+      tags:
+        - Posts
+      summary: Unpublish a post
+      description: Transitions a post back to draft status
+      operationId: unpublishPost
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post to unpublish
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post unpublished successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /posts/{id}/archive:
+    post:
+      tags:
+        - Posts
+      summary: Archive a post
+      description: Transitions a post to archived status
+      operationId: archivePost
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the post to archive
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post archived successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Themes endpoints
+  /themes:
+    get:
+      tags:
+        - Themes
+      summary: List themes
+      description: Returns a paginated list of themes
+      operationId: listThemes
+      security: []  # Public endpoint
+      parameters:
+        - name: isActive
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+        - name: curatorId
+          in: query
+          description: Filter by curator ID
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Page number (1-based)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          description: Field to sort by
+          schema:
+            type: string
+            enum: [created_at, updated_at, name, article_count]
+            default: created_at
+        - name: sortOrder
+          in: query
+          description: Sort direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: List of themes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedThemes'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Themes
+      summary: Create a new theme
+      description: Creates a new theme for curating posts
+      operationId: createTheme
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateThemeRequest'
+      responses:
+        '201':
+          description: Theme created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /themes/{id}:
+    get:
+      tags:
+        - Themes
+      summary: Get a theme by ID
+      description: Returns a single theme without articles
+      operationId: getTheme
+      security: []  # Public endpoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the theme
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Theme retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - Themes
+      summary: Update a theme
+      description: Updates an existing theme's details
+      operationId: updateTheme
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the theme to update
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateThemeRequest'
+      responses:
+        '200':
+          description: Theme updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Themes
+      summary: Delete a theme
+      description: Permanently deletes a theme and all its article associations
+      operationId: deleteTheme
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the theme to delete
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Theme deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /themes/slug/{slug}:
+    get:
+      tags:
+        - Themes
+      summary: Get a theme by slug
+      description: Returns a single theme by its URL slug
+      operationId: getThemeBySlug
+      security: []  # Public endpoint
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: The URL slug of the theme
+          schema:
+            type: string
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      responses:
+        '200':
+          description: Theme retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /themes/{id}/articles:
+    get:
+      tags:
+        - Themes
+      summary: Get theme with articles
+      description: Returns a theme with all its articles
+      operationId: getThemeWithArticles
+      security: []  # Public endpoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the theme
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Theme with articles retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThemeWithArticles'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Themes
+      summary: Add article to theme
+      description: Adds a published post to a theme
+      operationId: addArticleToTheme
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the theme
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddArticleRequest'
+      responses:
+        '201':
+          description: Article added successfully
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - Themes
+      summary: Reorder theme articles
+      description: Changes the order of articles in a theme
+      operationId: reorderThemeArticles
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the theme
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderArticlesRequest'
+      responses:
+        '200':
+          description: Articles reordered successfully
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /themes/{id}/articles/{postId}:
+    delete:
+      tags:
+        - Themes
+      summary: Remove article from theme
+      description: Removes a post from a theme
+      operationId: removeArticleFromTheme
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the theme
+          schema:
+            type: string
+            format: uuid
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to remove
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Article removed successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /themes/{id}/activate:
+    post:
+      tags:
+        - Themes
+      summary: Activate a theme
+      description: Makes a theme active and visible
+      operationId: activateTheme
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the theme to activate
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Theme activated successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /themes/{id}/deactivate:
+    post:
+      tags:
+        - Themes
+      summary: Deactivate a theme
+      description: Makes a theme inactive and hidden
+      operationId: deactivateTheme
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the theme to deactivate
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Theme deactivated successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
 tags:
   - name: System
     description: System health and monitoring
@@ -869,3 +1965,7 @@ tags:
     description: User management operations
   - name: Authorization
     description: Role and permission management
+  - name: Posts
+    description: Blog post management
+  - name: Themes
+    description: Theme and article curation management

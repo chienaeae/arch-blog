@@ -7,15 +7,18 @@ import (
 	"context"
 
 	"github.com/google/wire"
-	"github.com/philly/arch-blog/backend/internal/adapters/auth"
+	"github.com/philly/arch-blog/backend/internal/adapters/authz_adapter"
 	"github.com/philly/arch-blog/backend/internal/adapters/postgres"
 	"github.com/philly/arch-blog/backend/internal/adapters/rest"
 	"github.com/philly/arch-blog/backend/internal/adapters/rest/middleware"
 	authzApp "github.com/philly/arch-blog/backend/internal/authz/application"
+	"github.com/philly/arch-blog/backend/internal/platform/eventbus"
 	"github.com/philly/arch-blog/backend/internal/platform/logger"
+	postgresDb "github.com/philly/arch-blog/backend/internal/platform/postgres"
 	"github.com/philly/arch-blog/backend/internal/platform/ownership"
+	postsApp "github.com/philly/arch-blog/backend/internal/posts/application"
+	themesApp "github.com/philly/arch-blog/backend/internal/themes/application"
 	"github.com/philly/arch-blog/backend/internal/users/application"
-	"github.com/philly/arch-blog/backend/internal/users/ports"
 )
 
 // InitializeApp creates a fully configured App with all dependencies
@@ -35,24 +38,30 @@ func InitializeApp(ctx context.Context) (*App, func(), error) {
 		// Database
 		ConnectDatabase,
 		
+		// Platform services
+		postgresDb.NewTransactionManager,
+		ownership.ProviderSet,
+		eventbus.NewBus,
+		
 		// Repository providers (includes interface binding)
 		postgres.ProviderSet,
 		
-		// Platform services
-		ownership.ProviderSet,
+		// Cross-context adapters
+		authz_adapter.ProviderSet,
 		
 		// Application services
 		application.ProviderSet,
 		authzApp.ProviderSet,
+		postsApp.ProviderSet,
+		themesApp.ProviderSet,
 		
 		// REST handlers
 		rest.ProviderSet,
 		provideVersion, // Provide version string for HealthHandler
 		
 		// Auth middleware
-		provideJWTMiddleware,
-		provideAuthAdapter,
-		provideAuthorizationMiddleware,
+        provideJWTConfig,
+        middleware.ProviderSet,
 		
 		// HTTP Server
 		NewHTTPServer,
@@ -62,11 +71,6 @@ func InitializeApp(ctx context.Context) (*App, func(), error) {
 	)
 	
 	return nil, nil, nil
-}
-
-// provideJWTMiddleware creates JWT middleware from config
-func provideJWTMiddleware(ctx context.Context, config Config) (*auth.JWTMiddleware, error) {
-	return auth.NewJWTMiddleware(ctx, config.JWKSEndpoint, config.JWTIssuer)
 }
 
 // provideVersion provides the application version
@@ -82,12 +86,10 @@ func provideLoggerConfig(config Config) logger.Config {
 	}
 }
 
-// provideAuthAdapter creates the auth adapter middleware
-func provideAuthAdapter(userRepo ports.UserRepository, log logger.Logger) *middleware.AuthAdapter {
-	return middleware.NewAuthAdapter(userRepo, log)
-}
-
-// provideAuthorizationMiddleware creates the authorization middleware
-func provideAuthorizationMiddleware(authzService *authzApp.AuthzService, log logger.Logger) *middleware.AuthorizationMiddleware {
-	return middleware.NewAuthorizationMiddleware(authzService, log)
+// provideJWTConfig adapts server Config into middleware.JWTConfig to avoid package cycles
+func provideJWTConfig(config Config) middleware.JWTConfig {
+    return middleware.JWTConfig{
+        JWKS:   config.JWKSEndpoint,
+        Issuer: config.JWTIssuer,
+    }
 }

@@ -10,5 +10,7 @@ var ProviderSet = wire.NewSet(
 	NewUserHandler,
 	NewHealthHandler,
 	NewAuthzHandler,
+	NewPostsHandler,
+	NewThemesHandler,
 	NewServer, // Combined server that implements api.ServerInterface
 )

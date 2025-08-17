@@ -63,7 +63,6 @@ func (r *PostRepository) Create(ctx context.Context, post *domain.Post) error {
 			pgtype.Timestamptz{Time: post.UpdatedAt, Valid: true},
 		).
 		ToSql()
-
 	if err != nil {
 		return fmt.Errorf("PostRepository.Create: build query: %w", err)
 	}
@@ -97,7 +96,6 @@ func (r *PostRepository) Update(ctx context.Context, post *domain.Post) error {
 		Set("updated_at", pgtype.Timestamptz{Time: post.UpdatedAt, Valid: true}).
 		Where(sq.Eq{"id": pgtype.UUID{Bytes: uuid.UUID(post.ID), Valid: true}}).
 		ToSql()
-
 	if err != nil {
 		return fmt.Errorf("PostRepository.Update: build query: %w", err)
 	}
@@ -120,7 +118,6 @@ func (r *PostRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		Delete("posts").
 		Where(sq.Eq{"id": pgtype.UUID{Bytes: id, Valid: true}}).
 		ToSql()
-
 	if err != nil {
 		return fmt.Errorf("PostRepository.Delete: build query: %w", err)
 	}
@@ -147,7 +144,6 @@ func (r *PostRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Po
 		From("posts").
 		Where(sq.Eq{"id": pgtype.UUID{Bytes: id, Valid: true}}).
 		ToSql()
-
 	if err != nil {
 		return nil, fmt.Errorf("PostRepository.FindByID: build query: %w", err)
 	}
@@ -160,7 +156,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Po
 		}
 		return nil, fmt.Errorf("PostRepository.FindByID: %w", err)
 	}
-	
+
 	return post, nil
 }
 
@@ -174,7 +170,6 @@ func (r *PostRepository) FindBySlug(ctx context.Context, slug string) (*domain.P
 		From("posts").
 		Where(sq.Eq{"slug": slug}).
 		ToSql()
-
 	if err != nil {
 		return nil, fmt.Errorf("PostRepository.FindBySlug: build query: %w", err)
 	}
@@ -187,7 +182,7 @@ func (r *PostRepository) FindBySlug(ctx context.Context, slug string) (*domain.P
 		}
 		return nil, fmt.Errorf("PostRepository.FindBySlug: %w", err)
 	}
-	
+
 	return post, nil
 }
 
@@ -196,7 +191,7 @@ func (r *PostRepository) ListSummaries(ctx context.Context, filter ports.ListFil
 	// Start with a fresh query builder for the main query
 	qb := r.SB.Select(
 		"p.id", "p.title", "p.excerpt", "p.slug", "p.status",
-		"p.author_id", "u.username as author_name", 
+		"p.author_id", "u.username as author_name",
 		"p.published_at", "p.created_at", "p.updated_at",
 	).
 		From("posts p").
@@ -252,7 +247,7 @@ func (r *PostRepository) ListSummaries(ctx context.Context, filter ports.ListFil
 func (r *PostRepository) Count(ctx context.Context, filter ports.ListFilter) (int, error) {
 	// Start with a fresh query builder for count
 	qb := r.SB.Select("COUNT(*)").From("posts p")
-	
+
 	// Apply filters
 	qb = r.applyFilters(qb, filter)
 
@@ -274,20 +269,20 @@ func (r *PostRepository) Count(ctx context.Context, filter ports.ListFilter) (in
 func (r *PostRepository) SlugExists(ctx context.Context, slug string, excludeID *uuid.UUID) (bool, error) {
 	// Build the subquery
 	subQuery := r.SB.Select("1").From("posts").Where(sq.Eq{"slug": slug})
-	
+
 	if excludeID != nil {
 		subQuery = subQuery.Where(sq.NotEq{"id": pgtype.UUID{Bytes: *excludeID, Valid: true}})
 	}
-	
+
 	// Build the EXISTS query - we need to build the full SQL manually
 	subQuerySQL, subQueryArgs, err := subQuery.ToSql()
 	if err != nil {
 		return false, fmt.Errorf("PostRepository.SlugExists: build subquery: %w", err)
 	}
-	
+
 	// Construct the EXISTS query manually since squirrel doesn't support it directly
 	query := fmt.Sprintf("SELECT EXISTS(%s)", subQuerySQL)
-	
+
 	var exists bool
 	err = r.DB.QueryRow(ctx, query, subQueryArgs...).Scan(&exists)
 	if err != nil {
@@ -311,7 +306,6 @@ func (r *PostRepository) GetPostAuthor(ctx context.Context, postID uuid.UUID) (u
 		From("posts").
 		Where(sq.Eq{"id": pgtype.UUID{Bytes: postID, Valid: true}}).
 		ToSql()
-
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("PostRepository.GetPostAuthor: build query: %w", err)
 	}
@@ -411,7 +405,6 @@ func scanPost(row pgx.Row) (*domain.Post, error) {
 	return &post, nil
 }
 
-
 // scanPostSummaryFromRows scans a post summary from pgx.Rows
 func scanPostSummaryFromRows(rows pgx.Rows) (*ports.PostSummary, error) {
 	var summary ports.PostSummary
@@ -439,7 +432,7 @@ func scanPostSummaryFromRows(rows pgx.Rows) (*ports.PostSummary, error) {
 	// Convert pgtype values
 	summary.ID = uuid.UUID(idBytes.Bytes)
 	summary.AuthorID = uuid.UUID(authorIDBytes.Bytes)
-	
+
 	if authorName.Valid {
 		summary.AuthorName = authorName.String
 	}

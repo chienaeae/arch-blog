@@ -77,7 +77,6 @@ var (
 	ErrInvalidTransition = errors.New("invalid status transition")
 )
 
-
 // NewPost creates a new post with validation
 func NewPost(title, content, excerpt string, authorID uuid.UUID) (*Post, error) {
 	if err := validateTitle(title); err != nil {
@@ -104,15 +103,15 @@ func NewPost(title, content, excerpt string, authorID uuid.UUID) (*Post, error) 
 
 	now := time.Now()
 	return &Post{
-		ID:         uuid.New(),
-		Title:      title,
-		Slug:       slug,
-		Content:    content,
-		Excerpt:    excerpt,
-		AuthorID:   authorID,
-		Status:     PostStatusDraft,
-		CreatedAt:  now,
-		UpdatedAt:  now,
+		ID:        uuid.New(),
+		Title:     title,
+		Slug:      slug,
+		Content:   content,
+		Excerpt:   excerpt,
+		AuthorID:  authorID,
+		Status:    PostStatusDraft,
+		CreatedAt: now,
+		UpdatedAt: now,
 	}, nil
 }
 
@@ -207,7 +206,6 @@ func (p *Post) GetID() uuid.UUID {
 func (p *Post) GetAuthorID() uuid.UUID {
 	return p.AuthorID
 }
-
 
 // Validation helpers
 

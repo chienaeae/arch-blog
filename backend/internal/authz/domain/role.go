@@ -9,12 +9,12 @@ import (
 
 // Error definitions for role operations
 var (
-	ErrPermissionNil         = errors.New("permission cannot be nil")
-	ErrPermissionExists      = errors.New("permission already exists in role")
-	ErrPermissionNotFound    = errors.New("permission not found in role")
-	ErrOnlyTemplateCanClone  = errors.New("only template roles can be cloned")
-	ErrTemplateCannotAssign  = errors.New("template roles cannot be assigned to users")
-	ErrSystemCannotDelete    = errors.New("system roles cannot be deleted")
+	ErrPermissionNil        = errors.New("permission cannot be nil")
+	ErrPermissionExists     = errors.New("permission already exists in role")
+	ErrPermissionNotFound   = errors.New("permission not found in role")
+	ErrOnlyTemplateCanClone = errors.New("only template roles can be cloned")
+	ErrTemplateCannotAssign = errors.New("template roles cannot be assigned to users")
+	ErrSystemCannotDelete   = errors.New("system roles cannot be deleted")
 )
 
 // Role represents a role in the authorization system
@@ -64,14 +64,14 @@ func (r *Role) AddPermission(permission *Permission) error {
 	if permission == nil {
 		return ErrPermissionNil
 	}
-	
+
 	// Check if permission already exists
 	for _, p := range r.Permissions {
 		if p.ID == permission.ID {
 			return ErrPermissionExists
 		}
 	}
-	
+
 	r.Permissions = append(r.Permissions, permission)
 	r.UpdatedAt = time.Now()
 	return nil
@@ -125,12 +125,12 @@ func (r *Role) CloneAsCustomRole(newName, newDescription string) (*Role, error) 
 	if !r.IsTemplate {
 		return nil, ErrOnlyTemplateCanClone
 	}
-	
+
 	newRole := NewRole(newName, newDescription)
-	
+
 	// Copy all permissions from the template
 	newRole.Permissions = append(newRole.Permissions, r.Permissions...)
-	
+
 	return newRole, nil
 }
 

@@ -360,9 +360,9 @@ func TestParseUUID(t *testing.T) {
 
 func TestGetUserIDFromContext(t *testing.T) {
 	tests := []struct {
-		name       string
-		setupCtx   func() context.Context
-		expectID   uuid.UUID
+		name        string
+		setupCtx    func() context.Context
+		expectID    uuid.UUID
 		shouldPanic bool
 	}{
 		{
@@ -403,10 +403,10 @@ func TestGetUserIDFromContext(t *testing.T) {
 			} else {
 				// Get the expected ID from context for comparison
 				expectedID := ctx.Value(middleware.UserIDKey).(uuid.UUID)
-				
+
 				// Call the method
 				result := handler.GetUserIDFromContext(req)
-				
+
 				// Check result
 				if result != expectedID {
 					t.Errorf("expected user ID %v, got %v", expectedID, result)

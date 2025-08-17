@@ -12,7 +12,7 @@ import (
 // ConnectDatabase creates a new database connection pool and returns it with a cleanup function
 func ConnectDatabase(ctx context.Context, config Config, log logger.Logger) (*pgxpool.Pool, func(), error) {
 	log.Info(ctx, "connecting to database")
-	
+
 	// Parse config from URL and set pool defaults
 	poolConfig, err := pgxpool.ParseConfig(config.DatabaseURL)
 	if err != nil {

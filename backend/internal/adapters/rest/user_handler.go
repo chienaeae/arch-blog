@@ -97,7 +97,7 @@ func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 func domainUserToAPI(user *domain.User) api.User {
 	// Parse UUID string (User.ID is a string, not uuid.UUID)
 	parsedUUID, _ := uuid.Parse(user.ID)
-	
+
 	return api.User{
 		Id:          openapi_types.UUID(parsedUUID),
 		Email:       openapi_types.Email(user.Email),

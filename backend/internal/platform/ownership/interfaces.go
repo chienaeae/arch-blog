@@ -18,10 +18,10 @@ type Checker interface {
 type Registry interface {
 	// RegisterChecker registers an ownership checker for a resource type
 	RegisterChecker(resourceType string, checker Checker)
-	
+
 	// GetChecker retrieves the ownership checker for a resource type
 	GetChecker(resourceType string) (Checker, bool)
-	
+
 	// CheckOwnership checks ownership for any registered resource type
 	CheckOwnership(ctx context.Context, userID uuid.UUID, resourceType string, resourceID uuid.UUID) (bool, error)
 }

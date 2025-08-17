@@ -161,7 +161,7 @@ func (s *AuthzService) HasPermissionForResource(
 		// Build the "any" version of this permission
 		anyPermission := strings.Replace(permissionID, ":own", ":any", 1)
 		anyPermission = strings.Replace(anyPermission, ":self", ":any", 1)
-		
+
 		// Check if user has the "any" version first
 		hasAnyPermission, err := s.repo.HasPermission(ctx, userID, anyPermission)
 		if err != nil {
@@ -187,7 +187,7 @@ func (s *AuthzService) HasPermissionForResource(
 	if err != nil {
 		return false, fmt.Errorf("AuthzService.HasPermissionForResource: %w", err)
 	}
-	
+
 	return hasPermission, nil
 }
 
@@ -202,29 +202,29 @@ func (s *AuthzService) HasAnyPermission(ctx context.Context, userID uuid.UUID, p
 	if err != nil {
 		return false, fmt.Errorf("AuthzService.HasAnyPermission: %w", err)
 	}
-	
+
 	return hasAny, nil
 }
 
 // Can is a simplified authorization check method that builds the permission ID
 // from resource and action, then checks if the user has permission.
 // This method is designed to be used by adapters that bridge to other modules.
-// 
+//
 // For resource-specific checks (when resourceID is not nil), it will:
 // 1. Check for "resource:action:any" permission (global permission)
 // 2. If not found, check for "resource:action:own" with ownership verification
-// 
+//
 // For non-resource checks (when resourceID is nil), it will:
 // - Check for "resource:action" permission
 func (s *AuthzService) Can(ctx context.Context, userID uuid.UUID, resource string, action string, resourceID *uuid.UUID) (bool, error) {
 	// Build the base permission ID
 	permissionID := fmt.Sprintf("%s:%s", resource, action)
-	
+
 	// If no resourceID, just check the basic permission
 	if resourceID == nil {
 		return s.HasPermission(ctx, userID, permissionID)
 	}
-	
+
 	// For resource-specific checks, use HasPermissionForResource
 	return s.HasPermissionForResource(ctx, userID, permissionID+":own", resource, *resourceID)
 }
@@ -240,7 +240,7 @@ func (s *AuthzService) HasAllPermissions(ctx context.Context, userID uuid.UUID, 
 	if err != nil {
 		return false, fmt.Errorf("AuthzService.HasAllPermissions: %w", err)
 	}
-	
+
 	return hasAll, nil
 }
 
@@ -250,7 +250,7 @@ func (s *AuthzService) HasRole(ctx context.Context, userID uuid.UUID, roleName s
 	if err != nil {
 		return false, fmt.Errorf("AuthzService.HasRole: %w", err)
 	}
-	
+
 	return hasRole, nil
 }
 
@@ -260,7 +260,7 @@ func (s *AuthzService) GetUserPermissions(ctx context.Context, userID uuid.UUID)
 	if err != nil {
 		return nil, fmt.Errorf("AuthzService.GetUserPermissions: %w", err)
 	}
-	
+
 	return permissions, nil
 }
 
@@ -270,7 +270,7 @@ func (s *AuthzService) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]st
 	if err != nil {
 		return nil, fmt.Errorf("AuthzService.GetUserRoles: %w", err)
 	}
-	
+
 	return roles, nil
 }
 
@@ -704,6 +704,6 @@ func (s *AuthzService) checkOwnership(ctx context.Context, userID uuid.UUID, res
 	if err != nil {
 		return false, fmt.Errorf("checkOwnership: %w", err)
 	}
-	
+
 	return isOwner, nil
 }

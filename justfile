@@ -51,10 +51,22 @@ clean:
     rm -rf backend/bin
     @echo "✅ Build artifacts cleaned"
 
-# Database migrations (placeholder)
+# Supabase database management
+db-diff +args:
+    @echo "Checking database diff..."
+    npx supabase db diff {{args}}
+
+db-reset:
+    @echo "Resetting local database..."
+    npx supabase db reset
+
 db-migrate:
-    @echo "Will run migrations once database is set up"
-    # cd backend && goose -dir db/migrations postgres "postgresql://..." up
+    @echo "Applying database migrations..."
+    npx supabase migration up
+
+db-branch-status:
+    @echo "Checking database branch status..."
+    npx supabase db branch status
 
 # Install development tools
 install-tools:

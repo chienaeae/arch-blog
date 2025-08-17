@@ -116,7 +116,7 @@ func TestWithDetails(t *testing.T) {
 			if errWithDetails.Details == nil {
 				t.Errorf("expected details to be set, but was nil")
 			}
-			
+
 			// Verify it returns the same error instance (fluent interface)
 			if errWithDetails != err {
 				t.Errorf("WithDetails should return the same error instance")
@@ -141,7 +141,7 @@ func TestError(t *testing.T) {
 
 func TestUnwrap(t *testing.T) {
 	innerErr := errors.New("inner error")
-	
+
 	tests := []struct {
 		name        string
 		err         *apperror.AppError
@@ -187,21 +187,21 @@ func TestIs(t *testing.T) {
 		"user not found",
 		http.StatusNotFound,
 	)
-	
+
 	err2 := apperror.New(
 		apperror.CodeNotFound,
 		apperror.BusinessCodeUserNotFound,
 		"different message",
 		http.StatusNotFound,
 	)
-	
+
 	err3 := apperror.New(
 		apperror.CodeNotFound,
 		apperror.BusinessCodeRoleNotFound, // Different business code
 		"role not found",
 		http.StatusNotFound,
 	)
-	
+
 	err4 := apperror.New(
 		apperror.CodeConflict, // Different error code
 		apperror.BusinessCodeUserNotFound,
@@ -259,7 +259,7 @@ func TestIs(t *testing.T) {
 func TestFormat(t *testing.T) {
 	innerErr := errors.New("database error")
 	details := map[string]string{"field": "email"}
-	
+
 	err := apperror.Wrap(
 		innerErr,
 		apperror.CodeValidationFailed,
@@ -304,7 +304,7 @@ func TestFormat(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output := fmt.Sprintf(tt.format, err)
-			
+
 			for _, expected := range tt.contains {
 				if !contains(output, expected) {
 					t.Errorf("expected output to contain %q, got %q", expected, output)
@@ -323,7 +323,7 @@ func TestFormat_NoInnerError(t *testing.T) {
 	)
 
 	output := fmt.Sprintf("%+v", err)
-	
+
 	if contains(output, "Caused by:") {
 		t.Errorf("should not contain 'Caused by:' when there's no inner error, got %q", output)
 	}
@@ -338,7 +338,7 @@ func TestFormat_NoDetails(t *testing.T) {
 	)
 
 	output := fmt.Sprintf("%+v", err)
-	
+
 	if contains(output, "Details:") {
 		t.Errorf("should not contain 'Details:' when there are no details, got %q", output)
 	}

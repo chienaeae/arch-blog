@@ -37,7 +37,7 @@ func (t *ThemesOwnershipChecker) CheckOwnership(ctx context.Context, userID uuid
 		t.logger.Error(ctx, "failed to get theme curator", "error", err, "themeID", resourceID)
 		return false, err
 	}
-	
+
 	return curatorID == userID, nil
 }
 

@@ -18,13 +18,13 @@ var ProviderSet = wire.NewSet(
 
 // JWTConfig carries the minimal settings needed to construct the JWT middleware
 type JWTConfig struct {
-    JWKS   string
-    Issuer string
+	JWKS   string
+	Issuer string
 }
 
 // ProvideJWTMiddleware creates JWT middleware from JWTConfig
 func ProvideJWTMiddleware(ctx context.Context, cfg JWTConfig) (*JWTMiddleware, error) {
-    return NewJWTMiddleware(ctx, cfg.JWKS, cfg.Issuer)
+	return NewJWTMiddleware(ctx, cfg.JWKS, cfg.Issuer)
 }
 
 // ProvideAuthAdapter creates the auth adapter middleware

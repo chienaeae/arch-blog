@@ -23,43 +23,43 @@ const (
 	BusinessCodeGeneral BusinessCode = "GENERAL"
 
 	// User-specific business codes
-	BusinessCodeUserNotFound      BusinessCode = "USER_NOT_FOUND"
-	BusinessCodeEmailExists       BusinessCode = "EMAIL_ALREADY_EXISTS"
-	BusinessCodeUsernameExists    BusinessCode = "USERNAME_ALREADY_EXISTS"
-	BusinessCodeInvalidEmail      BusinessCode = "INVALID_EMAIL"
-	BusinessCodeInvalidUsername   BusinessCode = "INVALID_USERNAME"
-	BusinessCodeAccountSuspended  BusinessCode = "ACCOUNT_SUSPENDED"
-	BusinessCodeSupabaseIDExists  BusinessCode = "SUPABASE_ID_ALREADY_EXISTS"
-	
+	BusinessCodeUserNotFound     BusinessCode = "USER_NOT_FOUND"
+	BusinessCodeEmailExists      BusinessCode = "EMAIL_ALREADY_EXISTS"
+	BusinessCodeUsernameExists   BusinessCode = "USERNAME_ALREADY_EXISTS"
+	BusinessCodeInvalidEmail     BusinessCode = "INVALID_EMAIL"
+	BusinessCodeInvalidUsername  BusinessCode = "INVALID_USERNAME"
+	BusinessCodeAccountSuspended BusinessCode = "ACCOUNT_SUSPENDED"
+	BusinessCodeSupabaseIDExists BusinessCode = "SUPABASE_ID_ALREADY_EXISTS"
+
 	// Role-specific business codes
-	BusinessCodeRoleNotFound          BusinessCode = "ROLE_NOT_FOUND"
-	BusinessCodeRoleNameExists        BusinessCode = "ROLE_NAME_ALREADY_EXISTS"
-	BusinessCodeRoleAlreadyAssigned   BusinessCode = "ROLE_ALREADY_ASSIGNED"
-	BusinessCodeRoleNotAssigned       BusinessCode = "ROLE_NOT_ASSIGNED"
-	BusinessCodeCannotUpdateSystem    BusinessCode = "CANNOT_UPDATE_SYSTEM_ROLE"
-	BusinessCodeCannotDeleteSystem    BusinessCode = "CANNOT_DELETE_SYSTEM_ROLE"
-	BusinessCodeTemplateCannotAssign  BusinessCode = "TEMPLATE_ROLE_CANNOT_ASSIGN"
-	
+	BusinessCodeRoleNotFound         BusinessCode = "ROLE_NOT_FOUND"
+	BusinessCodeRoleNameExists       BusinessCode = "ROLE_NAME_ALREADY_EXISTS"
+	BusinessCodeRoleAlreadyAssigned  BusinessCode = "ROLE_ALREADY_ASSIGNED"
+	BusinessCodeRoleNotAssigned      BusinessCode = "ROLE_NOT_ASSIGNED"
+	BusinessCodeCannotUpdateSystem   BusinessCode = "CANNOT_UPDATE_SYSTEM_ROLE"
+	BusinessCodeCannotDeleteSystem   BusinessCode = "CANNOT_DELETE_SYSTEM_ROLE"
+	BusinessCodeTemplateCannotAssign BusinessCode = "TEMPLATE_ROLE_CANNOT_ASSIGN"
+
 	// Permission-specific business codes
-	BusinessCodePermissionNotFound   BusinessCode = "PERMISSION_NOT_FOUND"
-	BusinessCodeInvalidPermission     BusinessCode = "INVALID_PERMISSION"
-	BusinessCodePermissionDenied      BusinessCode = "PERMISSION_DENIED"
-	
+	BusinessCodePermissionNotFound BusinessCode = "PERMISSION_NOT_FOUND"
+	BusinessCodeInvalidPermission  BusinessCode = "INVALID_PERMISSION"
+	BusinessCodePermissionDenied   BusinessCode = "PERMISSION_DENIED"
+
 	// Validation-specific business codes
 	BusinessCodeMissingRequiredField BusinessCode = "MISSING_REQUIRED_FIELD"
 	BusinessCodeInvalidFormat        BusinessCode = "INVALID_FORMAT"
 	BusinessCodeValueTooLong         BusinessCode = "VALUE_TOO_LONG"
 	BusinessCodeValueTooShort        BusinessCode = "VALUE_TOO_SHORT"
-	
+
 	// Post-specific business codes
-	BusinessCodePostNotFound          BusinessCode = "POST_NOT_FOUND"
-	BusinessCodeSlugAlreadyExists     BusinessCode = "SLUG_ALREADY_EXISTS"
+	BusinessCodePostNotFound            BusinessCode = "POST_NOT_FOUND"
+	BusinessCodeSlugAlreadyExists       BusinessCode = "SLUG_ALREADY_EXISTS"
 	BusinessCodeInvalidStatusTransition BusinessCode = "INVALID_STATUS_TRANSITION"
-	BusinessCodeCannotAddToTheme      BusinessCode = "CANNOT_ADD_TO_THEME"
-	
+	BusinessCodeCannotAddToTheme        BusinessCode = "CANNOT_ADD_TO_THEME"
+
 	// Theme-specific business codes
-	BusinessCodeThemeNotFound         BusinessCode = "THEME_NOT_FOUND"
-	BusinessCodeThemeNameExists       BusinessCode = "THEME_NAME_ALREADY_EXISTS"
-	BusinessCodePostAlreadyInTheme    BusinessCode = "POST_ALREADY_IN_THEME"
-	BusinessCodePostNotInTheme        BusinessCode = "POST_NOT_IN_THEME"
+	BusinessCodeThemeNotFound      BusinessCode = "THEME_NOT_FOUND"
+	BusinessCodeThemeNameExists    BusinessCode = "THEME_NAME_ALREADY_EXISTS"
+	BusinessCodePostAlreadyInTheme BusinessCode = "POST_ALREADY_IN_THEME"
+	BusinessCodePostNotInTheme     BusinessCode = "POST_NOT_IN_THEME"
 )

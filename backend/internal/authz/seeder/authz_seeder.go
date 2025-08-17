@@ -98,7 +98,7 @@ func (s *AuthzSeeder) seedPermissions(ctx context.Context, tx pgx.Tx) error {
 func (s *AuthzSeeder) seedRoles(ctx context.Context, tx pgx.Tx) error {
 	// Use batch insert for better performance
 	batch := &pgx.Batch{}
-	
+
 	for _, role := range DefaultRoles {
 		query := `
 			INSERT INTO roles (name, description, is_template, is_system)
@@ -236,13 +236,13 @@ func (s *AuthzSeeder) fetchPermissionMapping(ctx context.Context, tx pgx.Tx) (ma
 		if err := rows.Scan(&id, &resource, &action, &scope); err != nil {
 			return nil, err
 		}
-		
+
 		// Reconstruct the permission ID string
 		permissionID := resource + ":" + action
 		if scope.Valid && scope.String != "" {
 			permissionID = permissionID + ":" + scope.String
 		}
-		
+
 		permMap[permissionID] = id
 	}
 

@@ -26,21 +26,21 @@ var (
 		"post not found",
 		http.StatusNotFound,
 	)
-	
+
 	ErrSlugAlreadyExists = apperror.New(
 		apperror.CodeConflict,
 		apperror.BusinessCodeSlugAlreadyExists,
 		"slug already exists",
 		http.StatusConflict,
 	)
-	
+
 	ErrInvalidStatusTransition = apperror.New(
 		apperror.CodeConflict,
 		apperror.BusinessCodeInvalidStatusTransition,
 		"invalid status transition",
 		http.StatusConflict,
 	)
-	
+
 	ErrInvalidPostData = apperror.New(
 		apperror.CodeValidationFailed,
 		apperror.BusinessCodeInvalidFormat,
@@ -67,7 +67,7 @@ func NewPostsService(
 ) *PostsService {
 	// Create a strict HTML sanitizer policy
 	sanitizer := bluemonday.UGCPolicy()
-	
+
 	return &PostsService{
 		repo:       repo,
 		authorizer: authorizer,
@@ -79,9 +79,9 @@ func NewPostsService(
 
 // CreatePostParams contains parameters for creating a new post
 type CreatePostParams struct {
-	Title    string
-	Content  string
-	Excerpt  string
+	Title   string
+	Content string
+	Excerpt string
 }
 
 // CreatePost creates a new blog post
@@ -107,7 +107,7 @@ func (s *PostsService) CreatePost(ctx context.Context, actorID uuid.UUID, params
 	}
 	// Sanitize HTML content
 	sanitizedContent := s.sanitizer.Sanitize(params.Content)
-	
+
 	// Create the post domain object (it will generate its own slug)
 	// The actor becomes the author
 	post, err := domain.NewPost(
@@ -119,20 +119,20 @@ func (s *PostsService) CreatePost(ctx context.Context, actorID uuid.UUID, params
 	if err != nil {
 		return nil, ErrInvalidPostData.WithDetails(err.Error())
 	}
-	
+
 	// Ensure slug uniqueness
 	uniqueSlug, err := s.ensureUniqueSlug(ctx, post.Slug, nil)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Update slug if needed
 	if uniqueSlug != post.Slug {
 		if err := post.UpdateSlug(uniqueSlug); err != nil {
 			return nil, ErrInvalidPostData.WithDetails(err.Error())
 		}
 	}
-	
+
 	// Save to repository
 	if err := s.repo.Create(ctx, post); err != nil {
 		s.logger.Error(ctx, "failed to create post", "error", err)
@@ -143,10 +143,10 @@ func (s *PostsService) CreatePost(ctx context.Context, actorID uuid.UUID, params
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishPostCreatedEvent(ctx, post)
-	
+
 	return post, nil
 }
 
@@ -183,15 +183,15 @@ func (s *PostsService) UpdatePost(ctx context.Context, actorID uuid.UUID, id uui
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Sanitize HTML content
 	sanitizedContent := s.sanitizer.Sanitize(params.Content)
-	
+
 	// Update the post content
 	if err := post.UpdateContent(params.Title, sanitizedContent, params.Excerpt); err != nil {
 		return nil, ErrInvalidPostData.WithDetails(err.Error())
 	}
-	
+
 	// Check if title changed and we need a new slug
 	newSlug := validator.GenerateSlug(params.Title, domain.MaxSlugLength)
 	if newSlug != post.Slug {
@@ -203,7 +203,7 @@ func (s *PostsService) UpdatePost(ctx context.Context, actorID uuid.UUID, id uui
 			return nil, ErrInvalidPostData.WithDetails(err.Error())
 		}
 	}
-	
+
 	// Save to repository
 	if err := s.repo.Update(ctx, post); err != nil {
 		s.logger.Error(ctx, "failed to update post", "error", err, "postID", id)
@@ -214,10 +214,10 @@ func (s *PostsService) UpdatePost(ctx context.Context, actorID uuid.UUID, id uui
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishPostUpdatedEvent(ctx, post)
-	
+
 	return post, nil
 }
 
@@ -246,11 +246,11 @@ func (s *PostsService) PublishPost(ctx context.Context, actorID uuid.UUID, id uu
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if err := post.Publish(); err != nil {
 		return nil, ErrInvalidStatusTransition.WithDetails(err.Error())
 	}
-	
+
 	if err := s.repo.Update(ctx, post); err != nil {
 		s.logger.Error(ctx, "failed to publish post", "error", err, "postID", id)
 		return nil, apperror.New(
@@ -260,10 +260,10 @@ func (s *PostsService) PublishPost(ctx context.Context, actorID uuid.UUID, id uu
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishPostPublishedEvent(ctx, post)
-	
+
 	return post, nil
 }
 
@@ -292,11 +292,11 @@ func (s *PostsService) ArchivePost(ctx context.Context, actorID uuid.UUID, id uu
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if err := post.Archive(); err != nil {
 		return nil, ErrInvalidStatusTransition.WithDetails(err.Error())
 	}
-	
+
 	if err := s.repo.Update(ctx, post); err != nil {
 		s.logger.Error(ctx, "failed to archive post", "error", err, "postID", id)
 		return nil, apperror.New(
@@ -306,10 +306,10 @@ func (s *PostsService) ArchivePost(ctx context.Context, actorID uuid.UUID, id uu
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishPostArchivedEvent(ctx, post)
-	
+
 	return post, nil
 }
 
@@ -338,11 +338,11 @@ func (s *PostsService) UnpublishPost(ctx context.Context, actorID uuid.UUID, id 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if err := post.Unpublish(); err != nil {
 		return nil, ErrInvalidStatusTransition.WithDetails(err.Error())
 	}
-	
+
 	if err := s.repo.Update(ctx, post); err != nil {
 		s.logger.Error(ctx, "failed to unpublish post", "error", err, "postID", id)
 		return nil, apperror.New(
@@ -352,10 +352,10 @@ func (s *PostsService) UnpublishPost(ctx context.Context, actorID uuid.UUID, id 
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishPostUpdatedEvent(ctx, post)
-	
+
 	return post, nil
 }
 
@@ -385,7 +385,7 @@ func (s *PostsService) DeletePost(ctx context.Context, actorID uuid.UUID, id uui
 	if err != nil {
 		return err
 	}
-	
+
 	// Delete from repository
 	if err := s.repo.Delete(ctx, id); err != nil {
 		s.logger.Error(ctx, "failed to delete post", "error", err, "postID", id)
@@ -396,10 +396,10 @@ func (s *PostsService) DeletePost(ctx context.Context, actorID uuid.UUID, id uui
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event so other modules can clean up
 	s.publishPostDeletedEvent(ctx, post)
-	
+
 	return nil
 }
 
@@ -438,7 +438,7 @@ func (s *PostsService) ListPosts(ctx context.Context, filter ports.ListFilter) (
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	count, err := s.repo.Count(ctx, filter)
 	if err != nil {
 		s.logger.Error(ctx, "failed to count posts", "error", err)
@@ -449,7 +449,7 @@ func (s *PostsService) ListPosts(ctx context.Context, filter ports.ListFilter) (
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	return summaries, count, nil
 }
 
@@ -476,7 +476,7 @@ func (s *PostsService) getPostByID(ctx context.Context, id uuid.UUID) (*domain.P
 func (s *PostsService) ensureUniqueSlug(ctx context.Context, baseSlug string, excludeID *uuid.UUID) (string, error) {
 	slug := baseSlug
 	suffix := 1
-	
+
 	for {
 		exists, err := s.repo.SlugExists(ctx, slug, excludeID)
 		if err != nil {
@@ -488,15 +488,15 @@ func (s *PostsService) ensureUniqueSlug(ctx context.Context, baseSlug string, ex
 				http.StatusInternalServerError,
 			)
 		}
-		
+
 		if !exists {
 			return slug, nil
 		}
-		
+
 		// Try with a suffix
 		slug = validator.MakeSlugUniqueWithMaxLength(baseSlug, suffix, domain.MaxSlugLength)
 		suffix++
-		
+
 		// Prevent infinite loop
 		if suffix > 100 {
 			return "", ErrSlugAlreadyExists.WithDetails(

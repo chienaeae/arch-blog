@@ -27,15 +27,15 @@ func ValidateSlugFormat(slug string, maxLength int) error {
 	if slug == "" {
 		return ErrSlugEmpty
 	}
-	
+
 	if len(slug) > maxLength {
 		return ErrSlugTooLong
 	}
-	
+
 	if !slugValidationRegex.MatchString(slug) {
 		return ErrInvalidSlugFormat
 	}
-	
+
 	return nil
 }
 
@@ -43,23 +43,23 @@ func ValidateSlugFormat(slug string, maxLength int) error {
 func GenerateSlug(text string, maxLength int) string {
 	// Convert to lowercase
 	slug := strings.ToLower(text)
-	
+
 	// Replace spaces and special characters with hyphens
 	slug = slugReplaceRegex.ReplaceAllString(slug, "-")
-	
+
 	// Remove leading/trailing hyphens
 	slug = strings.Trim(slug, "-")
-	
+
 	// Collapse multiple hyphens
 	slug = slugCollapseRegex.ReplaceAllString(slug, "-")
-	
+
 	// Truncate if too long
 	if len(slug) > maxLength {
 		slug = slug[:maxLength]
 		// Ensure we don't end with a hyphen after truncation
 		slug = strings.TrimRight(slug, "-")
 	}
-	
+
 	return slug
 }
 
@@ -69,7 +69,7 @@ func MakeSlugUnique(baseSlug string, suffix int) string {
 	if suffix <= 0 {
 		return baseSlug
 	}
-	
+
 	return fmt.Sprintf("%s-%d", baseSlug, suffix)
 }
 
@@ -82,9 +82,9 @@ func MakeSlugUniqueWithMaxLength(baseSlug string, suffix int, maxLength int) str
 		}
 		return baseSlug
 	}
-	
+
 	suffixStr := "-" + strconv.Itoa(suffix)
-	
+
 	// If the base slug plus suffix would exceed max length, truncate the base
 	if len(baseSlug)+len(suffixStr) > maxLength {
 		maxBaseLength := maxLength - len(suffixStr)
@@ -94,6 +94,6 @@ func MakeSlugUniqueWithMaxLength(baseSlug string, suffix int, maxLength int) str
 			baseSlug = strings.TrimRight(baseSlug, "-")
 		}
 	}
-	
+
 	return baseSlug + suffixStr
 }

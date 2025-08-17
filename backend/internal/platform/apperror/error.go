@@ -44,7 +44,7 @@ func (e *AppError) Format(f fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if f.Flag('+') {
-			_, _ = fmt.Fprintf(f, "Code: %s, BusinessCode: %s, Message: %s, HTTPStatus: %d", 
+			_, _ = fmt.Fprintf(f, "Code: %s, BusinessCode: %s, Message: %s, HTTPStatus: %d",
 				e.Code, e.BusinessCode, e.Message, e.HTTPStatus)
 			if e.Inner != nil {
 				_, _ = fmt.Fprintf(f, "\nCaused by: %+v", e.Inner)

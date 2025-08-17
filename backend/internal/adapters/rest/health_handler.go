@@ -35,7 +35,7 @@ func (h *HealthHandler) GetLiveness(w http.ResponseWriter, r *http.Request) {
 	// Simple check - if we can respond, we're alive
 	status := api.Healthy
 	timestamp := time.Now()
-	
+
 	response := api.HealthStatus{
 		Status:    status,
 		Timestamp: timestamp,
@@ -62,10 +62,10 @@ func (h *HealthHandler) GetReadiness(w http.ResponseWriter, r *http.Request) {
 		checks = &struct {
 			Database *api.HealthStatusChecksDatabase `json:"database,omitempty"`
 		}{}
-		
+
 		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 		defer cancel()
-		
+
 		if err := h.pool.Ping(ctx); err != nil {
 			dbStatus := api.Down
 			checks.Database = &dbStatus

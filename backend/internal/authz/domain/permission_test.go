@@ -10,11 +10,11 @@ import (
 
 func TestNewPermission(t *testing.T) {
 	tests := []struct {
-		name        string
-		resource    string
-		action      string
-		scope       string
-		description string
+		name         string
+		resource     string
+		action       string
+		scope        string
+		description  string
 		wantIDString string
 	}{
 		{
@@ -46,7 +46,7 @@ func TestNewPermission(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			perm := domain.NewPermission(tt.resource, tt.action, tt.scope, tt.description)
-			
+
 			assert.NotNil(t, perm)
 			assert.Equal(t, tt.resource, perm.Resource)
 			assert.Equal(t, tt.action, perm.Action)
@@ -62,13 +62,13 @@ func TestNewPermission(t *testing.T) {
 
 func TestNewPermissionFromID(t *testing.T) {
 	tests := []struct {
-		name          string
-		permissionID  string
-		description   string
-		wantResource  string
-		wantAction    string
-		wantScope     string
-		wantErr       bool
+		name         string
+		permissionID string
+		description  string
+		wantResource string
+		wantAction   string
+		wantScope    string
+		wantErr      bool
 	}{
 		{
 			name:         "simple permission",
@@ -114,7 +114,7 @@ func TestNewPermissionFromID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			perm, err := domain.NewPermissionFromID(tt.permissionID, tt.description)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.ErrorIs(t, err, domain.ErrInvalidPermissionID)
@@ -199,7 +199,7 @@ func TestPermission_IsGlobal(t *testing.T) {
 
 func TestPermission_Matches(t *testing.T) {
 	perm := domain.NewPermission("posts", "update", "own", "")
-	
+
 	assert.True(t, perm.Matches("posts", "update"))
 	assert.False(t, perm.Matches("posts", "create"))
 	assert.False(t, perm.Matches("users", "update"))

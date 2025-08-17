@@ -42,6 +42,6 @@ func (r *DefaultRegistry) CheckOwnership(ctx context.Context, userID uuid.UUID, 
 	if !exists {
 		return false, fmt.Errorf("no ownership checker registered for resource type: %s", resourceType)
 	}
-	
+
 	return checker.CheckOwnership(ctx, userID, resourceID)
 }

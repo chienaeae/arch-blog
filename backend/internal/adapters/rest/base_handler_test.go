@@ -8,10 +8,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"backend/internal/adapters/rest"
+	"backend/internal/adapters/rest/middleware"
+	"backend/internal/platform/apperror"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/adapters/rest"
-	"github.com/philly/arch-blog/backend/internal/adapters/rest/middleware"
-	"github.com/philly/arch-blog/backend/internal/platform/apperror"
 )
 
 // mockLogger implements the logger.Logger interface for testing

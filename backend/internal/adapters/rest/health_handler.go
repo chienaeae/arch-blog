@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"backend/internal/adapters/api"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/philly/arch-blog/backend/internal/adapters/api"
 )
 
 // HealthChecker provides methods to check system health

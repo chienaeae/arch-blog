@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"backend/internal/authz/domain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/philly/arch-blog/backend/internal/authz/domain"
 )
 
 // ===== USER AUTHORIZATION OPERATIONS =====

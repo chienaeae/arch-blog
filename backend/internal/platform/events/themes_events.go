@@ -3,8 +3,8 @@ package events
 import (
 	"time"
 
+	"backend/internal/platform/eventbus"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/platform/eventbus"
 )
 
 // Theme event topics

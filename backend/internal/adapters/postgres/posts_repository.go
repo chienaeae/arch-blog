@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 
+	"backend/internal/platform/postgres"
+	"backend/internal/posts/domain"
+	"backend/internal/posts/ports"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/philly/arch-blog/backend/internal/platform/postgres"
-	"github.com/philly/arch-blog/backend/internal/posts/domain"
-	"github.com/philly/arch-blog/backend/internal/posts/ports"
 )
 
 // PostRepository implements the posts.PostRepository interface using PostgreSQL

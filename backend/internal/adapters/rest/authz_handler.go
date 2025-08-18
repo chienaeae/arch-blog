@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"backend/internal/adapters/api"
+	"backend/internal/authz/application"
+	"backend/internal/authz/domain"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
-	"github.com/philly/arch-blog/backend/internal/adapters/api"
-	"github.com/philly/arch-blog/backend/internal/authz/application"
-	"github.com/philly/arch-blog/backend/internal/authz/domain"
 )
 
 // AuthzHandler handles authorization management endpoints

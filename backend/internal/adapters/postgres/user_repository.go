@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 
+	"backend/internal/users/domain"
+	"backend/internal/users/ports"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/philly/arch-blog/backend/internal/users/domain"
-	"github.com/philly/arch-blog/backend/internal/users/ports"
 )
 
 type UserRepository struct {

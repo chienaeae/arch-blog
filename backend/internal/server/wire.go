@@ -6,19 +6,19 @@ package server
 import (
 	"context"
 
+	"backend/internal/adapters/authz_adapter"
+	"backend/internal/adapters/postgres"
+	"backend/internal/adapters/rest"
+	"backend/internal/adapters/rest/middleware"
+	authzApp "backend/internal/authz/application"
+	"backend/internal/platform/eventbus"
+	"backend/internal/platform/logger"
+	"backend/internal/platform/ownership"
+	postgresDb "backend/internal/platform/postgres"
+	postsApp "backend/internal/posts/application"
+	themesApp "backend/internal/themes/application"
+	"backend/internal/users/application"
 	"github.com/google/wire"
-	"github.com/philly/arch-blog/backend/internal/adapters/authz_adapter"
-	"github.com/philly/arch-blog/backend/internal/adapters/postgres"
-	"github.com/philly/arch-blog/backend/internal/adapters/rest"
-	"github.com/philly/arch-blog/backend/internal/adapters/rest/middleware"
-	authzApp "github.com/philly/arch-blog/backend/internal/authz/application"
-	"github.com/philly/arch-blog/backend/internal/platform/eventbus"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
-	"github.com/philly/arch-blog/backend/internal/platform/ownership"
-	postgresDb "github.com/philly/arch-blog/backend/internal/platform/postgres"
-	postsApp "github.com/philly/arch-blog/backend/internal/posts/application"
-	themesApp "github.com/philly/arch-blog/backend/internal/themes/application"
-	"github.com/philly/arch-blog/backend/internal/users/application"
 )
 
 // InitializeApp creates a fully configured App with all dependencies

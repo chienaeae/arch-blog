@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 
+	"backend/internal/adapters/rest/middleware"
+	"backend/internal/platform/apperror"
+	"backend/internal/platform/logger"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/adapters/rest/middleware"
-	"github.com/philly/arch-blog/backend/internal/platform/apperror"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
 )
 
 // BaseHandler contains common dependencies and helper methods for all handlers

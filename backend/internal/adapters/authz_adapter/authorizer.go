@@ -3,10 +3,10 @@ package authz_adapter
 import (
 	"context"
 
+	authzApp "backend/internal/authz/application"
+	postsPorts "backend/internal/posts/ports"
+	themesPorts "backend/internal/themes/ports"
 	"github.com/google/uuid"
-	authzApp "github.com/philly/arch-blog/backend/internal/authz/application"
-	postsPorts "github.com/philly/arch-blog/backend/internal/posts/ports"
-	themesPorts "github.com/philly/arch-blog/backend/internal/themes/ports"
 )
 
 // AuthzAdapter is the unified adapter that bridges the authz service

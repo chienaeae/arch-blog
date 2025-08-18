@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/philly/arch-blog/backend/internal/users/domain"
+	"backend/internal/users/domain"
 )
 
 type UserRepository interface {

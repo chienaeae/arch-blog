@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"strings"
 
+	"backend/internal/authz/domain"
+	"backend/internal/authz/permission"
+	"backend/internal/authz/ports"
+	"backend/internal/platform/apperror"
+	"backend/internal/platform/logger"
+	"backend/internal/platform/ownership"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/authz/domain"
-	"github.com/philly/arch-blog/backend/internal/authz/permission"
-	"github.com/philly/arch-blog/backend/internal/authz/ports"
-	"github.com/philly/arch-blog/backend/internal/platform/apperror"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
-	"github.com/philly/arch-blog/backend/internal/platform/ownership"
 )
 
 // Error definitions for service operations using AppError

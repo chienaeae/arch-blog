@@ -3,10 +3,10 @@ package middleware
 import (
 	"context"
 
+	authzApp "backend/internal/authz/application"
+	"backend/internal/platform/logger"
+	"backend/internal/users/ports"
 	"github.com/google/wire"
-	authzApp "github.com/philly/arch-blog/backend/internal/authz/application"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
-	"github.com/philly/arch-blog/backend/internal/users/ports"
 )
 
 // ProviderSet is the wire provider set for middleware components

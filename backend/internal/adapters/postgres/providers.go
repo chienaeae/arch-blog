@@ -1,10 +1,10 @@
 package postgres
 
 import (
+	authzPorts "backend/internal/authz/ports"
+	postsPorts "backend/internal/posts/ports"
+	themesPorts "backend/internal/themes/ports"
 	"github.com/google/wire"
-	authzPorts "github.com/philly/arch-blog/backend/internal/authz/ports"
-	postsPorts "github.com/philly/arch-blog/backend/internal/posts/ports"
-	themesPorts "github.com/philly/arch-blog/backend/internal/themes/ports"
 )
 
 // ProviderSet is the wire provider set for postgres repositories

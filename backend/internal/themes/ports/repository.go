@@ -5,9 +5,9 @@ import (
 	"errors"
 	"time"
 
+	"backend/internal/themes/domain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/philly/arch-blog/backend/internal/themes/domain"
 )
 
 // Repository errors (canonical errors for the repository contract)

@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"time"
 
+	"backend/internal/platform/postgres"
+	"backend/internal/themes/domain"
+	"backend/internal/themes/ports"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/philly/arch-blog/backend/internal/platform/postgres"
-	"github.com/philly/arch-blog/backend/internal/themes/domain"
-	"github.com/philly/arch-blog/backend/internal/themes/ports"
 )
 
 // ThemeRepository implements the themes.ThemeRepository interface using PostgreSQL

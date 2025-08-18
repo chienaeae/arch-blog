@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"backend/internal/platform/validator"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/platform/validator"
 )
 
 // PostStatus represents the publication state of a post

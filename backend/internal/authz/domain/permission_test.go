@@ -3,7 +3,7 @@ package domain_test
 import (
 	"testing"
 
-	"github.com/philly/arch-blog/backend/internal/authz/domain"
+	"backend/internal/authz/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

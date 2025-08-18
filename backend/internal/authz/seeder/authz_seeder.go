@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
+	"backend/internal/authz/permission"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/philly/arch-blog/backend/internal/authz/permission"
 )
 
 // AuthzSeeder handles seeding of authorization data

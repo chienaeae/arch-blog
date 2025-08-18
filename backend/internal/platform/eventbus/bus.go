@@ -5,7 +5,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
+	"backend/internal/platform/logger"
 )
 
 // Bus manages subscriptions and event dispatching.

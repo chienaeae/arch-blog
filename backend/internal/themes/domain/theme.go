@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"backend/internal/platform/validator"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/platform/validator"
 )
 
 // Theme represents a curated collection of articles

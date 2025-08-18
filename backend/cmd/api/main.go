@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/philly/arch-blog/backend/internal/server"
+	"backend/internal/server"
 )
 
 func main() {

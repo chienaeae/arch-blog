@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"backend/internal/platform/logger"
 	"github.com/joho/godotenv"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
 	"github.com/spf13/viper"
 )
 

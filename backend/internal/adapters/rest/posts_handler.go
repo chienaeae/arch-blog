@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"backend/internal/adapters/api"
+	"backend/internal/posts/application"
+	"backend/internal/posts/domain"
+	"backend/internal/posts/ports"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
-	"github.com/philly/arch-blog/backend/internal/adapters/api"
-	"github.com/philly/arch-blog/backend/internal/posts/application"
-	"github.com/philly/arch-blog/backend/internal/posts/domain"
-	"github.com/philly/arch-blog/backend/internal/posts/ports"
 )
 
 // PostsHandler handles HTTP requests for posts

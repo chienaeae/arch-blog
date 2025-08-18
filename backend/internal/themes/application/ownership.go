@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
+	"backend/internal/platform/logger"
+	"backend/internal/platform/ownership"
+	"backend/internal/themes/ports"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
-	"github.com/philly/arch-blog/backend/internal/platform/ownership"
-	"github.com/philly/arch-blog/backend/internal/themes/ports"
 )
 
 // ThemesOwnershipChecker checks ownership of themes

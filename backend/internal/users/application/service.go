@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/philly/arch-blog/backend/internal/platform/apperror"
-	"github.com/philly/arch-blog/backend/internal/users/domain"
-	"github.com/philly/arch-blog/backend/internal/users/ports"
+	"backend/internal/platform/apperror"
+	"backend/internal/users/domain"
+	"backend/internal/users/ports"
 )
 
 var (

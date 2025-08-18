@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"github.com/philly/arch-blog/backend/internal/adapters/api"
+	"backend/internal/adapters/api"
 )
 
 // Server combines all handlers to implement api.ServerInterface

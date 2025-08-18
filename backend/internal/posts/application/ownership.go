@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
+	"backend/internal/platform/logger"
+	"backend/internal/platform/ownership"
+	"backend/internal/posts/ports"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
-	"github.com/philly/arch-blog/backend/internal/platform/ownership"
-	"github.com/philly/arch-blog/backend/internal/posts/ports"
 )
 
 // PostsOwnershipChecker checks ownership of posts

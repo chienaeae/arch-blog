@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"backend/internal/platform/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
 )
 
 // Seeder defines the interface for all data seeders

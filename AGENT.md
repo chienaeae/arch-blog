@@ -58,14 +58,20 @@ backend/
 - **OpenAPI → Go**: `just gen` - generates chi-server stubs from `schema/api.yaml`
 - **Wire DI**: `just wire` - generates dependency injection code
 - **Generated files**: `adapters/api/generated.go`, `server/wire_gen.go` (gitignored)
+- **Important**: Run `just generate` after pulling changes to ensure generated files are up to date before running tests.
 
 ### Database
-- **pgx/v5**: Direct PostgreSQL driver with native types
-- **Flyway**: Migrations in `db/migrations/`
+- **Driver**: `pgx/v5` (Direct PostgreSQL driver).
+- **Schema Management**: Handled by **Supabase CLI**.
+  - Migrations are located in `supabase/migrations/`.
+  - Migrations use a `YYYYMMDDHHMMSS_description.sql` timestamp format.
+- **Local Development**:
+  - `supabase/seed.sql` is used to seed the local database for development. This is run automatically by `just db-reset`.
+  - For initial setup and linking to the Supabase platform, see `supabase/README.md`.
 - **Best Practices**:
-  - Use `pgtype.UUID`, `pgtype.Text`, `pgtype.Timestamptz`
-  - Defer rollback: `defer func() { _ = tx.Rollback(ctx) }()`
-  - Transactions at service layer, not repository
+  - Use `pgtype.UUID`, `pgtype.Text`, `pgtype.Timestamptz`.
+  - Defer rollback: `defer func() { _ = tx.Rollback(ctx) }()`.
+  - Transactions at service layer, not repository.
 
 ### HTTP & Middleware
 - **chi v5**: Router with per-route middleware
@@ -77,14 +83,21 @@ backend/
 
 ### Commands (justfile)
 ```bash
+# General
+just check        # Format, test, and lint all code
 just run          # Start API server
 just test         # Run tests with race detector
 just lint         # Run golangci-lint
+
+# Code Generation
+just generate     # Generate all code (OpenAPI + Wire)
 just gen          # Generate from OpenAPI
 just wire         # Generate DI code
-just migrate      # Run database migrations
-just seed         # Seed initial data
-just check        # fmt + test + lint
+
+# Database (Supabase)
+just db-migrate   # Apply all migrations to the local DB
+just db-reset     # Reset the local DB and re-apply all migrations + seed.sql
+just db-diff ...  # Diff the local DB against migrations (e.g., `just db-diff -f my-change`)
 ```
 
 ### Environment Variables

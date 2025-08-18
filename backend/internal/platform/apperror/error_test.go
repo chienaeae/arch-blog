@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/philly/arch-blog/backend/internal/platform/apperror"
+	"backend/internal/platform/apperror"
 )
 
 func TestNew(t *testing.T) {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	"backend/internal/platform/logger"
+	"backend/internal/users/ports"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
-	"github.com/philly/arch-blog/backend/internal/users/ports"
 )
 
 // AuthAdapter bridges the gap between the external authentication provider (Supabase)

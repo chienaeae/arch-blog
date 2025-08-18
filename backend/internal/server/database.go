@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"backend/internal/platform/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
 )
 
 // ConnectDatabase creates a new database connection pool and returns it with a cleanup function

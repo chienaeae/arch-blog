@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"backend/internal/posts/domain"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/posts/domain"
 )
 
 // Repository errors - these are the canonical errors that repository

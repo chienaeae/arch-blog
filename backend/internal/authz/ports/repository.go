@@ -3,8 +3,8 @@ package ports
 import (
 	"context"
 
+	"backend/internal/authz/domain"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/authz/domain"
 )
 
 // AuthzRepository defines the interface for authorization data persistence

@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
+	"backend/internal/adapters/api"
+	"backend/internal/adapters/rest/middleware"
+	"backend/internal/platform/logger"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
-	"github.com/philly/arch-blog/backend/internal/adapters/api"
-	"github.com/philly/arch-blog/backend/internal/adapters/rest/middleware"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
 )
 
 // NewHTTPServer creates and configures the HTTP server with all routes

@@ -6,15 +6,15 @@ import (
 	"net/http"
 	"time"
 
+	"backend/internal/platform/apperror"
+	"backend/internal/platform/eventbus"
+	"backend/internal/platform/events"
+	"backend/internal/platform/logger"
+	"backend/internal/platform/postgres"
+	"backend/internal/platform/validator"
+	"backend/internal/themes/domain"
+	"backend/internal/themes/ports"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/platform/apperror"
-	"github.com/philly/arch-blog/backend/internal/platform/eventbus"
-	"github.com/philly/arch-blog/backend/internal/platform/events"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
-	"github.com/philly/arch-blog/backend/internal/platform/postgres"
-	"github.com/philly/arch-blog/backend/internal/platform/validator"
-	"github.com/philly/arch-blog/backend/internal/themes/domain"
-	"github.com/philly/arch-blog/backend/internal/themes/ports"
 )
 
 // Error definitions for service operations

@@ -1,9 +1,9 @@
 package authz_adapter
 
 import (
+	postsPorts "backend/internal/posts/ports"
+	themesPorts "backend/internal/themes/ports"
 	"github.com/google/wire"
-	postsPorts "github.com/philly/arch-blog/backend/internal/posts/ports"
-	themesPorts "github.com/philly/arch-blog/backend/internal/themes/ports"
 )
 
 // ProviderSet is the wire provider set for the authorization adapter

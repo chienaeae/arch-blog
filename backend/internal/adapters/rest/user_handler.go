@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"backend/internal/adapters/api"
+	"backend/internal/adapters/rest/middleware"
+	"backend/internal/users/application"
+	"backend/internal/users/domain"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
-	"github.com/philly/arch-blog/backend/internal/adapters/api"
-	"github.com/philly/arch-blog/backend/internal/adapters/rest/middleware"
-	"github.com/philly/arch-blog/backend/internal/users/application"
-	"github.com/philly/arch-blog/backend/internal/users/domain"
 )
 
 type UserHandler struct {

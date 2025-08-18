@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"backend/internal/adapters/api"
+	"backend/internal/themes/application"
+	"backend/internal/themes/domain"
+	"backend/internal/themes/ports"
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
-	"github.com/philly/arch-blog/backend/internal/adapters/api"
-	"github.com/philly/arch-blog/backend/internal/themes/application"
-	"github.com/philly/arch-blog/backend/internal/themes/domain"
-	"github.com/philly/arch-blog/backend/internal/themes/ports"
 )
 
 // ThemesHandler handles HTTP requests for themes

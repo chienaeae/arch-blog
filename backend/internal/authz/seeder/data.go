@@ -1,6 +1,6 @@
 package seeder
 
-import "github.com/philly/arch-blog/backend/internal/authz/permission"
+import "backend/internal/authz/permission"
 
 // DefaultRole represents a role to be seeded
 type DefaultRole struct {

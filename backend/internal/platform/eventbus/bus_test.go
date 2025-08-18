@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/philly/arch-blog/backend/internal/platform/eventbus"
+	"backend/internal/platform/eventbus"
 )
 
 // mockLogger implements the logger.Logger interface for testing

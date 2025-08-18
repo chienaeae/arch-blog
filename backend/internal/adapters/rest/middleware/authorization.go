@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	"backend/internal/authz/application"
+	"backend/internal/platform/logger"
 	"github.com/google/uuid"
-	"github.com/philly/arch-blog/backend/internal/authz/application"
-	"github.com/philly/arch-blog/backend/internal/platform/logger"
 )
 
 // contextKey is a custom type for context keys to avoid collisions

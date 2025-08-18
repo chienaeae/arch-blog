@@ -3,9 +3,9 @@ package application
 import (
 	"context"
 
+	postsApp "backend/internal/posts/application"
+	"backend/internal/themes/domain"
 	"github.com/google/uuid"
-	postsApp "github.com/philly/arch-blog/backend/internal/posts/application"
-	"github.com/philly/arch-blog/backend/internal/themes/domain"
 )
 
 // PostAdapter implements the PostProvider interface

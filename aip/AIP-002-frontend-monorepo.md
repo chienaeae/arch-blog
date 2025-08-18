@@ -54,6 +54,11 @@ Establish a modern, scalable, and developer-efficient frontend monorepo architec
     - [ ] 1.7.6: Add `frontend:dev` → `cd frontend && pnpm turbo run dev --parallel`.
     - [ ] 1.7.7: Add `frontend:turbo task=<task>` → `cd frontend && pnpm turbo run {{task}}`.
     - [ ] 1.7.8: Add `frontend:clean` → remove `frontend/**/node_modules`, `frontend/.turbo`, `frontend/apps/**/.next`, `frontend/apps/**/dist`.
+  - [ ] 1.8: GitHub Actions updates (frontend workflow skeleton)
+    - [ ] 1.8.1: Create `.github/workflows/frontend-ci.yml`.
+    - [ ] 1.8.2: Triggers: `push`/`pull_request` on `main` with path filters: `frontend/**`, `schema/api.yaml`, `.github/workflows/frontend-ci.yml`.
+    - [ ] 1.8.3: Concurrency: `${{ github.workflow }}-${{ github.ref }}` with `cancel-in-progress: true`.
+    - [ ] 1.8.4: Add job `check`: Node 20 + `pnpm@9`, install in `frontend/`, run `pnpm check` (Biome).
 
 - [ ] Phase 2: Component-driven development and core UI
   - [ ] 2.1: Create the UI package (`packages/ui`)
@@ -77,6 +82,9 @@ Establish a modern, scalable, and developer-efficient frontend monorepo architec
     - [ ] 2.5.1: Add `frontend:storybook` → `cd frontend && pnpm --filter @apps/storybook dev`.
     - [ ] 2.5.2: Add `frontend:storybook:build` → `cd frontend && pnpm --filter @apps/storybook build` (or `storybook build`).
     - [ ] 2.5.3: Add `frontend:ui:build` → `cd frontend && pnpm --filter @arch/ui build`.
+  - [ ] 2.6: GitHub Actions updates (storybook and build)
+    - [ ] 2.6.1: Add job `build`: Node 20 + `pnpm@9`, cache `frontend/.turbo`, run `pnpm turbo run build`.
+    - [ ] 2.6.2: Add job `storybook`: run `pnpm --filter @apps/storybook build`; optionally publish to Chromatic if `CHROMATIC_PROJECT_TOKEN` is present.
 
 - [ ] Phase 3: Data layer end-to-end
   - [ ] 3.1: Create the API client (`packages/api-client`)
@@ -97,6 +105,9 @@ Establish a modern, scalable, and developer-efficient frontend monorepo architec
     - [ ] 3.5.1: Add `frontend:api:gen` → `cd frontend && pnpm --filter @arch/api-client gen` (wraps OpenAPI generation).
     - [ ] 3.5.2: Add `frontend:api:clean` → `cd frontend && pnpm --filter @arch/api-client clean`.
     - [ ] 3.5.3: Add `frontend:dev:web-blog` → `cd frontend && pnpm --filter @apps/web-blog dev`.
+  - [ ] 3.6: GitHub Actions updates (API generation)
+    - [ ] 3.6.1: In job `build`, add step to run `pnpm --filter @arch/api-client gen` (guard with `|| echo "not configured"`).
+    - [ ] 3.6.2: Ensure workflow `paths` includes `schema/api.yaml` to retrigger when the API schema changes.
 
 - [ ] Phase 4: App expansion and testing foundation
   - [ ] 4.1: Initialize the admin panel (`apps/admin-panel`)
@@ -117,6 +128,9 @@ Establish a modern, scalable, and developer-efficient frontend monorepo architec
     - [ ] 4.5.2: Add `frontend:test` → `cd frontend && pnpm turbo run test`.
     - [ ] 4.5.3: Add `frontend:test:unit` → `cd frontend && pnpm --filter "@arch/{utils,hooks}" test`.
     - [ ] 4.5.4: Add `frontend:test:components` → `cd frontend && pnpm --filter @arch/ui test` (or Storybook test-runner).
+  - [ ] 4.6: GitHub Actions updates (tests)
+    - [ ] 4.6.1: Add job `unit-tests`: run `pnpm turbo run test` (Vitest/Storybook test-runner) with Node 20 + `pnpm@9`.
+    - [ ] 4.6.2: Set `needs: build` for test jobs to reuse cache and artifacts.
 
 - [ ] Phase 5: End-to-end testing and CI/CD hardening
   - [ ] 5.1: Create the E2E test app (`apps/e2e`)
@@ -134,6 +148,9 @@ Establish a modern, scalable, and developer-efficient frontend monorepo architec
     - [ ] 5.5.1: Add `frontend:e2e` → `cd frontend && pnpm --filter @apps/e2e test`.
     - [ ] 5.5.2: Add `frontend:e2e:headed` → `cd frontend && pnpm --filter @apps/e2e test:headed`.
     - [ ] 5.5.3: Add `frontend:e2e:ci` → `cd frontend && pnpm --filter @apps/e2e test:ci`.
+  - [ ] 5.6: GitHub Actions updates (E2E)
+    - [ ] 5.6.1: Add job `e2e`: install Playwright browsers via `pnpm exec playwright install --with-deps` (or dlx fallback).
+    - [ ] 5.6.2: Run `pnpm --filter @apps/e2e test:ci` with `CI=true`; set `needs: build`.
 
 Expected final structure (illustrative):
 
@@ -189,17 +206,20 @@ frontend/
 - [ ] Phase 1 outputs:
   - [ ] Root `pnpm install` succeeds; `pnpm check` passes; `pnpm turbo build` succeeds.
   - [ ] Directory scaffold and shared TS configs are in place; Turborepo pipelines run.
+  - [ ] Frontend CI workflow exists with `check` job, concurrency, and path filters.
 - [ ] Phase 2 outputs:
   - [ ] Storybook displays and interacts with `packages/ui` components; Tailwind styles apply.
   - [ ] `apps/web-blog` renders shared UI components successfully.
+  - [ ] CI jobs `build` and `storybook` pass; Chromatic optional publishing works when token present.
 - [ ] Phase 3 outputs:
   - [ ] `packages/api-client` generates code and types from `schema/api.yaml`.
   - [ ] `apps/web-blog` shows real backend data via `packages/hooks`, with end-to-end type safety.
+  - [ ] CI runs API client generation as part of `build` when `schema/api.yaml` changes.
 - [ ] Phase 4 outputs:
   - [ ] `apps/admin-panel` starts successfully and reuses shared packages.
-  - [ ] Vitest and Storybook Interaction Tests pass locally and in CI.
+  - [ ] Vitest and Storybook Interaction Tests pass locally and in CI (`unit-tests` job green).
 - [ ] Phase 5 outputs:
-  - [ ] Playwright E2E tests pass reliably in CI; remote cache is effective and build times drop.
+  - [ ] Playwright E2E tests pass reliably in CI (`e2e` job green); remote cache is effective and build times drop.
   - [ ] (Optional) Chromatic visual regression is part of CI.
 - [ ] CI/CD: every commit triggers Lint/Unit/Component/E2E; merging to `main` deploys only affected apps.
 

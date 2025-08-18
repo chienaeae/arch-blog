@@ -15,7 +15,7 @@ type contextKey string
 const (
 	// UserIDKey is the context key for the authenticated user's ID
 	UserIDKey contextKey = "userID"
-	
+
 	// ResourceIDKey is the context key for the resource ID in ownership checks
 	ResourceIDKey contextKey = "resourceID"
 
@@ -42,7 +42,7 @@ func (m *AuthorizationMiddleware) RequirePermission(permission string) func(http
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			
+
 			// Get user ID from context (should be set by authentication middleware)
 			userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 			if !ok {
@@ -50,7 +50,7 @@ func (m *AuthorizationMiddleware) RequirePermission(permission string) func(http
 				WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 				return
 			}
-			
+
 			// Check permission
 			hasPermission, err := m.authzService.HasPermission(ctx, userID, permission)
 			if err != nil {
@@ -62,7 +62,7 @@ func (m *AuthorizationMiddleware) RequirePermission(permission string) func(http
 				WriteJSONError(w, ErrorCodeInternalServerError, "Failed to check permissions", http.StatusInternalServerError)
 				return
 			}
-			
+
 			if !hasPermission {
 				m.logger.Warn(ctx, "permission denied",
 					"user_id", userID,
@@ -71,7 +71,7 @@ func (m *AuthorizationMiddleware) RequirePermission(permission string) func(http
 				WriteJSONError(w, ErrorCodeForbidden, "Insufficient permissions", http.StatusForbidden)
 				return
 			}
-			
+
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -82,7 +82,7 @@ func (m *AuthorizationMiddleware) RequireAnyPermission(permissions ...string) fu
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			
+
 			// Get user ID from context
 			userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 			if !ok {
@@ -90,7 +90,7 @@ func (m *AuthorizationMiddleware) RequireAnyPermission(permissions ...string) fu
 				WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 				return
 			}
-			
+
 			// Check permissions
 			hasPermission, err := m.authzService.HasAnyPermission(ctx, userID, permissions)
 			if err != nil {
@@ -102,7 +102,7 @@ func (m *AuthorizationMiddleware) RequireAnyPermission(permissions ...string) fu
 				WriteJSONError(w, ErrorCodeInternalServerError, "Failed to check permissions", http.StatusInternalServerError)
 				return
 			}
-			
+
 			if !hasPermission {
 				m.logger.Warn(ctx, "permission denied",
 					"user_id", userID,
@@ -111,7 +111,7 @@ func (m *AuthorizationMiddleware) RequireAnyPermission(permissions ...string) fu
 				WriteJSONError(w, ErrorCodeForbidden, "Insufficient permissions", http.StatusForbidden)
 				return
 			}
-			
+
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -122,7 +122,7 @@ func (m *AuthorizationMiddleware) RequireAllPermissions(permissions ...string) f
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			
+
 			// Get user ID from context
 			userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 			if !ok {
@@ -130,7 +130,7 @@ func (m *AuthorizationMiddleware) RequireAllPermissions(permissions ...string) f
 				WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 				return
 			}
-			
+
 			// Check permissions
 			hasPermissions, err := m.authzService.HasAllPermissions(ctx, userID, permissions)
 			if err != nil {
@@ -142,7 +142,7 @@ func (m *AuthorizationMiddleware) RequireAllPermissions(permissions ...string) f
 				WriteJSONError(w, ErrorCodeInternalServerError, "Failed to check permissions", http.StatusInternalServerError)
 				return
 			}
-			
+
 			if !hasPermissions {
 				m.logger.Warn(ctx, "permission denied",
 					"user_id", userID,
@@ -151,7 +151,7 @@ func (m *AuthorizationMiddleware) RequireAllPermissions(permissions ...string) f
 				WriteJSONError(w, ErrorCodeForbidden, "Insufficient permissions", http.StatusForbidden)
 				return
 			}
-			
+
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -162,7 +162,7 @@ func (m *AuthorizationMiddleware) RequireRole(role string) func(http.Handler) ht
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			
+
 			// Get user ID from context
 			userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 			if !ok {
@@ -170,7 +170,7 @@ func (m *AuthorizationMiddleware) RequireRole(role string) func(http.Handler) ht
 				WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 				return
 			}
-			
+
 			// Check role
 			hasRole, err := m.authzService.HasRole(ctx, userID, role)
 			if err != nil {
@@ -182,7 +182,7 @@ func (m *AuthorizationMiddleware) RequireRole(role string) func(http.Handler) ht
 				WriteJSONError(w, ErrorCodeInternalServerError, "Failed to check permissions", http.StatusInternalServerError)
 				return
 			}
-			
+
 			if !hasRole {
 				m.logger.Warn(ctx, "role denied",
 					"user_id", userID,
@@ -191,7 +191,7 @@ func (m *AuthorizationMiddleware) RequireRole(role string) func(http.Handler) ht
 				WriteJSONError(w, ErrorCodeForbidden, "Insufficient permissions", http.StatusForbidden)
 				return
 			}
-			
+
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -203,7 +203,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			
+
 			// Get user ID from context
 			userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 			if !ok {
@@ -211,7 +211,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 				WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 				return
 			}
-			
+
 			// Get resource ID from URL
 			resourceIDStr := r.PathValue(urlParam)
 			if resourceIDStr == "" {
@@ -221,7 +221,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 				WriteJSONError(w, ErrorCodeValidationError, "Invalid request parameters", http.StatusBadRequest)
 				return
 			}
-			
+
 			resourceID, err := uuid.Parse(resourceIDStr)
 			if err != nil {
 				m.logger.Warn(ctx, "invalid resource ID",
@@ -231,7 +231,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 				WriteJSONError(w, ErrorCodeValidationError, "Invalid request parameters", http.StatusBadRequest)
 				return
 			}
-			
+
 			// Check permission with ownership
 			hasPermission, err := m.authzService.HasPermissionForResource(
 				ctx, userID, permission, resourceType, resourceID,
@@ -247,7 +247,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 				WriteJSONError(w, ErrorCodeInternalServerError, "Failed to check permissions", http.StatusInternalServerError)
 				return
 			}
-			
+
 			if !hasPermission {
 				m.logger.Warn(ctx, "resource permission denied",
 					"user_id", userID,
@@ -258,7 +258,7 @@ func (m *AuthorizationMiddleware) RequireResourcePermission(permission, resource
 				WriteJSONError(w, ErrorCodeForbidden, "Insufficient permissions", http.StatusForbidden)
 				return
 			}
-			
+
 			// Add resource ID to context for handlers
 			ctx = context.WithValue(ctx, ResourceIDKey, resourceID)
 			next.ServeHTTP(w, r.WithContext(ctx))

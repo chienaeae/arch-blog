@@ -29,7 +29,7 @@ func (a *PostAdapter) GetPost(ctx context.Context, id uuid.UUID) (domain.PostInf
 		// The BaseHandler will handle AppErrors appropriately
 		return nil, err
 	}
-	
+
 	// The Post domain object directly implements PostInfo interface
 	return post, nil
 }

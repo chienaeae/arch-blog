@@ -25,42 +25,42 @@ var (
 		"theme not found",
 		http.StatusNotFound,
 	)
-	
+
 	ErrSlugAlreadyExists = apperror.New(
 		apperror.CodeConflict,
 		apperror.BusinessCodeSlugAlreadyExists,
 		"slug already exists",
 		http.StatusConflict,
 	)
-	
+
 	ErrInvalidThemeData = apperror.New(
 		apperror.CodeValidationFailed,
 		apperror.BusinessCodeInvalidFormat,
 		"invalid theme data",
 		http.StatusBadRequest,
 	)
-	
+
 	ErrPostNotPublished = apperror.New(
 		apperror.CodeValidationFailed,
 		apperror.BusinessCodeCannotAddToTheme,
 		"only published posts can be added to themes",
 		http.StatusBadRequest,
 	)
-	
+
 	ErrThemeInactive = apperror.New(
 		apperror.CodeConflict,
 		apperror.BusinessCodeInvalidStatusTransition,
 		"cannot modify an inactive theme",
 		http.StatusConflict,
 	)
-	
+
 	ErrPostAlreadyInTheme = apperror.New(
 		apperror.CodeConflict,
 		apperror.BusinessCodePostAlreadyInTheme,
 		"post is already in this theme",
 		http.StatusConflict,
 	)
-	
+
 	ErrPostNotInTheme = apperror.New(
 		apperror.CodeNotFound,
 		apperror.BusinessCodePostNotInTheme,
@@ -137,20 +137,20 @@ func (s *ThemesService) CreateTheme(ctx context.Context, actorID uuid.UUID, para
 	if err != nil {
 		return nil, ErrInvalidThemeData.WithDetails(err.Error())
 	}
-	
+
 	// Ensure slug uniqueness
 	uniqueSlug, err := s.ensureUniqueSlug(ctx, theme.Slug, nil)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Update slug if needed
 	if uniqueSlug != theme.Slug {
 		if err := theme.UpdateSlug(uniqueSlug); err != nil {
 			return nil, ErrInvalidThemeData.WithDetails(err.Error())
 		}
 	}
-	
+
 	// Save to repository
 	if err := s.repo.Create(ctx, theme); err != nil {
 		s.logger.Error(ctx, "failed to create theme", "error", err)
@@ -161,10 +161,10 @@ func (s *ThemesService) CreateTheme(ctx context.Context, actorID uuid.UUID, para
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishThemeCreatedEvent(ctx, theme, actorID)
-	
+
 	return theme, nil
 }
 
@@ -200,12 +200,12 @@ func (s *ThemesService) UpdateTheme(ctx context.Context, actorID uuid.UUID, id u
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Update the theme details
 	if err := theme.Update(params.Name, params.Description); err != nil {
 		return nil, ErrInvalidThemeData.WithDetails(err.Error())
 	}
-	
+
 	// Check if name changed and we need a new slug
 	newSlug := validator.GenerateSlug(params.Name, domain.MaxSlugLength)
 	if newSlug != theme.Slug {
@@ -217,7 +217,7 @@ func (s *ThemesService) UpdateTheme(ctx context.Context, actorID uuid.UUID, id u
 			return nil, ErrInvalidThemeData.WithDetails(err.Error())
 		}
 	}
-	
+
 	// Save to repository (no transaction needed - only updating theme, not articles)
 	if err := s.repo.Save(ctx, theme); err != nil {
 		s.logger.Error(ctx, "failed to update theme", "error", err, "themeID", id)
@@ -228,10 +228,10 @@ func (s *ThemesService) UpdateTheme(ctx context.Context, actorID uuid.UUID, id u
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishThemeUpdatedEvent(ctx, theme, actorID)
-	
+
 	return theme, nil
 }
 
@@ -270,13 +270,13 @@ func (s *ThemesService) AddArticleToTheme(ctx context.Context, actorID uuid.UUID
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Get the post information
 	post, err := s.postProvider.GetPost(ctx, postID)
 	if err != nil {
 		return err
 	}
-	
+
 	// Add the article using domain logic
 	if err := theme.AddArticle(post, actorID); err != nil {
 		// Map domain errors to service errors
@@ -291,7 +291,7 @@ func (s *ThemesService) AddArticleToTheme(ctx context.Context, actorID uuid.UUID
 			return ErrInvalidThemeData.WithDetails(err.Error())
 		}
 	}
-	
+
 	// Save the entire aggregate atomically within a transaction
 	if err := s.saveThemeWithTransaction(ctx, theme); err != nil {
 		s.logger.Error(ctx, "failed to save theme", "error", err, "themeID", themeID)
@@ -302,13 +302,13 @@ func (s *ThemesService) AddArticleToTheme(ctx context.Context, actorID uuid.UUID
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	// Find the position of the newly added article
 	if article, exists := theme.GetArticle(postID); exists {
 		s.publishThemeArticleAddedEvent(ctx, themeID, postID, article.Position, actorID)
 	}
-	
+
 	return nil
 }
 
@@ -347,7 +347,7 @@ func (s *ThemesService) RemoveArticleFromTheme(ctx context.Context, actorID uuid
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Remove the article using domain logic
 	if err := theme.RemoveArticle(postID); err != nil {
 		// Map domain errors to service errors
@@ -360,7 +360,7 @@ func (s *ThemesService) RemoveArticleFromTheme(ctx context.Context, actorID uuid
 			return ErrInvalidThemeData.WithDetails(err.Error())
 		}
 	}
-	
+
 	// Save the entire aggregate atomically within a transaction
 	if err := s.saveThemeWithTransaction(ctx, theme); err != nil {
 		s.logger.Error(ctx, "failed to save theme", "error", err, "themeID", themeID)
@@ -371,10 +371,10 @@ func (s *ThemesService) RemoveArticleFromTheme(ctx context.Context, actorID uuid
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishThemeArticleRemovedEvent(ctx, themeID, postID, actorID)
-	
+
 	return nil
 }
 
@@ -413,7 +413,7 @@ func (s *ThemesService) ReorderThemeArticles(ctx context.Context, actorID uuid.U
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Reorder articles using domain logic
 	if err := theme.ReorderArticles(orderedPostIDs); err != nil {
 		// Map domain errors to service errors
@@ -433,7 +433,7 @@ func (s *ThemesService) ReorderThemeArticles(ctx context.Context, actorID uuid.U
 			return ErrInvalidThemeData.WithDetails(err.Error())
 		}
 	}
-	
+
 	// Save the entire aggregate atomically within a transaction
 	if err := s.saveThemeWithTransaction(ctx, theme); err != nil {
 		s.logger.Error(ctx, "failed to save theme", "error", err, "themeID", themeID)
@@ -444,10 +444,10 @@ func (s *ThemesService) ReorderThemeArticles(ctx context.Context, actorID uuid.U
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishThemeArticlesReorderedEvent(ctx, themeID, orderedPostIDs, actorID)
-	
+
 	return nil
 }
 
@@ -476,9 +476,9 @@ func (s *ThemesService) ActivateTheme(ctx context.Context, actorID uuid.UUID, id
 	if err != nil {
 		return err
 	}
-	
+
 	theme.Activate()
-	
+
 	if err := s.repo.Save(ctx, theme); err != nil {
 		s.logger.Error(ctx, "failed to activate theme", "error", err, "themeID", id)
 		return apperror.New(
@@ -488,10 +488,10 @@ func (s *ThemesService) ActivateTheme(ctx context.Context, actorID uuid.UUID, id
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishThemeActivatedEvent(ctx, theme, actorID)
-	
+
 	return nil
 }
 
@@ -520,9 +520,9 @@ func (s *ThemesService) DeactivateTheme(ctx context.Context, actorID uuid.UUID, 
 	if err != nil {
 		return err
 	}
-	
+
 	theme.Deactivate()
-	
+
 	if err := s.repo.Save(ctx, theme); err != nil {
 		s.logger.Error(ctx, "failed to deactivate theme", "error", err, "themeID", id)
 		return apperror.New(
@@ -532,10 +532,10 @@ func (s *ThemesService) DeactivateTheme(ctx context.Context, actorID uuid.UUID, 
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishThemeDeactivatedEvent(ctx, theme, actorID)
-	
+
 	return nil
 }
 
@@ -565,7 +565,7 @@ func (s *ThemesService) DeleteTheme(ctx context.Context, actorID uuid.UUID, id u
 	if err != nil {
 		return err
 	}
-	
+
 	// Delete from repository
 	if err := s.repo.Delete(ctx, id); err != nil {
 		s.logger.Error(ctx, "failed to delete theme", "error", err, "themeID", id)
@@ -576,10 +576,10 @@ func (s *ThemesService) DeleteTheme(ctx context.Context, actorID uuid.UUID, id u
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	// Publish event
 	s.publishThemeDeletedEvent(ctx, id, actorID)
-	
+
 	return nil
 }
 
@@ -636,7 +636,7 @@ func (s *ThemesService) ListThemes(ctx context.Context, filter ports.ListFilter)
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	count, err := s.repo.CountThemes(ctx, filter)
 	if err != nil {
 		s.logger.Error(ctx, "failed to count themes", "error", err)
@@ -647,7 +647,7 @@ func (s *ThemesService) ListThemes(ctx context.Context, filter ports.ListFilter)
 			http.StatusInternalServerError,
 		)
 	}
-	
+
 	return summaries, count, nil
 }
 
@@ -715,7 +715,7 @@ func (s *ThemesService) saveThemeWithTransaction(ctx context.Context, theme *dom
 func (s *ThemesService) ensureUniqueSlug(ctx context.Context, baseSlug string, excludeID *uuid.UUID) (string, error) {
 	slug := baseSlug
 	suffix := 1
-	
+
 	for {
 		exists, err := s.repo.SlugExists(ctx, slug, excludeID)
 		if err != nil {
@@ -727,15 +727,15 @@ func (s *ThemesService) ensureUniqueSlug(ctx context.Context, baseSlug string, e
 				http.StatusInternalServerError,
 			)
 		}
-		
+
 		if !exists {
 			return slug, nil
 		}
-		
+
 		// Try with a suffix
 		slug = validator.MakeSlugUniqueWithMaxLength(baseSlug, suffix, domain.MaxSlugLength)
 		suffix++
-		
+
 		// Prevent infinite loop
 		if suffix > 100 {
 			return "", ErrSlugAlreadyExists.WithDetails("unable to generate unique slug")

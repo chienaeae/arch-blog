@@ -12,12 +12,12 @@ import (
 )
 
 var (
-	ErrMissingToken     = errors.New("missing authentication token")
-	ErrInvalidToken     = errors.New("invalid authentication token")
-	ErrTokenExpired     = errors.New("token has expired")
-	ErrInvalidIssuer    = errors.New("invalid token issuer")
-	ErrMissingSubject   = errors.New("missing subject in token")
-	ErrMissingEmail     = errors.New("missing email in token")
+	ErrMissingToken   = errors.New("missing authentication token")
+	ErrInvalidToken   = errors.New("invalid authentication token")
+	ErrTokenExpired   = errors.New("token has expired")
+	ErrInvalidIssuer  = errors.New("invalid token issuer")
+	ErrMissingSubject = errors.New("missing subject in token")
+	ErrMissingEmail   = errors.New("missing email in token")
 )
 
 type jwtContextKey string
@@ -34,7 +34,6 @@ type JWTMiddleware struct {
 }
 
 func NewJWTMiddleware(ctx context.Context, jwksEndpoint string, issuer string) (*JWTMiddleware, error) {
-
 	// Create a cache with automatic refresh
 	cache, err := jwk.NewCache(ctx, nil)
 	if err != nil {

@@ -1,0 +1,9 @@
+-- This file is used to seed the local database for development convenience.
+-- It is executed automatically by `supabase db reset`.
+--
+-- Prod/staging baseline data should be managed by the Go seeders, not this file.
+--
+-- Example:
+-- INSERT INTO public.users (id, supabase_id, email, username, display_name)
+-- VALUES
+--   ('8a8b8c8d-8e8f-8g8h-8i8j-8k8l8m8n8o8p', 'some-supabase-id', 'dev@example.com', 'devuser', 'Dev User');

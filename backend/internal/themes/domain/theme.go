@@ -30,15 +30,15 @@ const (
 
 // Validation errors
 var (
-	ErrInvalidName           = errors.New("name is required and must not exceed 100 characters")
-	ErrInvalidSlug           = errors.New("slug is invalid or too long")
-	ErrInvalidDescription    = errors.New("description must not exceed 1000 characters")
-	ErrInvalidCuratorID      = errors.New("curator ID is required")
-	ErrPostNotPublished      = errors.New("only published posts can be added to themes")
-	ErrThemeInactive         = errors.New("cannot modify an inactive theme")
-	ErrArticleNotFound       = errors.New("article not found in theme")
-	ErrInvalidArticleCount   = errors.New("number of post IDs doesn't match number of articles")
-	ErrInvalidArticlePostID  = errors.New("post ID not found in theme")
+	ErrInvalidName          = errors.New("name is required and must not exceed 100 characters")
+	ErrInvalidSlug          = errors.New("slug is invalid or too long")
+	ErrInvalidDescription   = errors.New("description must not exceed 1000 characters")
+	ErrInvalidCuratorID     = errors.New("curator ID is required")
+	ErrPostNotPublished     = errors.New("only published posts can be added to themes")
+	ErrThemeInactive        = errors.New("cannot modify an inactive theme")
+	ErrArticleNotFound      = errors.New("article not found in theme")
+	ErrInvalidArticleCount  = errors.New("number of post IDs doesn't match number of articles")
+	ErrInvalidArticlePostID = errors.New("post ID not found in theme")
 )
 
 // NewTheme creates a new theme with validation

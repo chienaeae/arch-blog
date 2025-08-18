@@ -20,8 +20,8 @@ type Querier interface {
 
 // BaseRepository contains the common database components that all repositories need
 type BaseRepository struct {
-	DB Querier                  // Database connection (pool or transaction)
-	SB sq.StatementBuilderType  // SQL builder with PostgreSQL placeholders
+	DB Querier                 // Database connection (pool or transaction)
+	SB sq.StatementBuilderType // SQL builder with PostgreSQL placeholders
 }
 
 // NewBaseRepository creates a new base repository with a database pool

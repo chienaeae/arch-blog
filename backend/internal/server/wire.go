@@ -14,8 +14,8 @@ import (
 	authzApp "github.com/philly/arch-blog/backend/internal/authz/application"
 	"github.com/philly/arch-blog/backend/internal/platform/eventbus"
 	"github.com/philly/arch-blog/backend/internal/platform/logger"
-	postgresDb "github.com/philly/arch-blog/backend/internal/platform/postgres"
 	"github.com/philly/arch-blog/backend/internal/platform/ownership"
+	postgresDb "github.com/philly/arch-blog/backend/internal/platform/postgres"
 	postsApp "github.com/philly/arch-blog/backend/internal/posts/application"
 	themesApp "github.com/philly/arch-blog/backend/internal/themes/application"
 	"github.com/philly/arch-blog/backend/internal/users/application"
@@ -27,49 +27,49 @@ func InitializeApp(ctx context.Context) (*App, func(), error) {
 		// Bootstrap phase
 		logger.NewBootstrapLogger,
 		LoadConfig,
-		
+
 		// Logger configuration
 		provideLoggerConfig,
-		
+
 		// Main logger
 		logger.NewConfiguredLogger,
 		wire.Bind(new(logger.Logger), new(*logger.SlogAdapter)),
-		
+
 		// Database
 		ConnectDatabase,
-		
+
 		// Platform services
 		postgresDb.NewTransactionManager,
 		ownership.ProviderSet,
 		eventbus.NewBus,
-		
+
 		// Repository providers (includes interface binding)
 		postgres.ProviderSet,
-		
+
 		// Cross-context adapters
 		authz_adapter.ProviderSet,
-		
+
 		// Application services
 		application.ProviderSet,
 		authzApp.ProviderSet,
 		postsApp.ProviderSet,
 		themesApp.ProviderSet,
-		
+
 		// REST handlers
 		rest.ProviderSet,
 		provideVersion, // Provide version string for HealthHandler
-		
+
 		// Auth middleware
-        provideJWTConfig,
-        middleware.ProviderSet,
-		
+		provideJWTConfig,
+		middleware.ProviderSet,
+
 		// HTTP Server
 		NewHTTPServer,
-		
+
 		// App
 		NewApp,
 	)
-	
+
 	return nil, nil, nil
 }
 
@@ -88,8 +88,8 @@ func provideLoggerConfig(config Config) logger.Config {
 
 // provideJWTConfig adapts server Config into middleware.JWTConfig to avoid package cycles
 func provideJWTConfig(config Config) middleware.JWTConfig {
-    return middleware.JWTConfig{
-        JWKS:   config.JWKSEndpoint,
-        Issuer: config.JWTIssuer,
-    }
+	return middleware.JWTConfig{
+		JWKS:   config.JWKSEndpoint,
+		Issuer: config.JWTIssuer,
+	}
 }

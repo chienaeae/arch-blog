@@ -42,7 +42,6 @@ func (r *UserRepository) Create(ctx context.Context, user *domain.User) error {
 		user.CreatedAt,
 		user.UpdatedAt,
 	)
-
 	if err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
 	}
@@ -71,7 +70,6 @@ func (r *UserRepository) FindByID(ctx context.Context, id string) (*domain.User,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -107,7 +105,6 @@ func (r *UserRepository) FindBySupabaseID(ctx context.Context, supabaseID string
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -143,7 +140,6 @@ func (r *UserRepository) FindByUsername(ctx context.Context, username string) (*
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -179,7 +175,6 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -208,7 +203,6 @@ func (r *UserRepository) Update(ctx context.Context, user *domain.User) error {
 		nullString(user.AvatarURL),
 		user.UpdatedAt,
 	)
-
 	if err != nil {
 		return fmt.Errorf("failed to update user: %w", err)
 	}
@@ -218,25 +212,25 @@ func (r *UserRepository) Update(ctx context.Context, user *domain.User) error {
 
 func (r *UserRepository) ExistsByUsername(ctx context.Context, username string) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`
-	
+
 	var exists bool
 	err := r.pool.QueryRow(ctx, query, username).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("failed to check username existence: %w", err)
 	}
-	
+
 	return exists, nil
 }
 
 func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)`
-	
+
 	var exists bool
 	err := r.pool.QueryRow(ctx, query, email).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("failed to check email existence: %w", err)
 	}
-	
+
 	return exists, nil
 }
 

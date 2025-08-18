@@ -1,7 +1,7 @@
 ---
 AIP-ID: 001
 Title: Migrate from Flyway to Supabase DB Branch Workflow with Schema/Data Responsibility Separation
-Status: READY
+Status: IN_PROGRESS
 Version: 1.0
 Last-Updated: 2025-08-17
 ---
@@ -15,22 +15,22 @@ The current repository uses Flyway-style SQL migrations in `db/migrations` (e.g.
 This plan follows the official Supabase migration workflow, including local development (`supabase migration new`, `supabase migration up`, `supabase db diff`, `supabase db reset`) and deployment (`supabase db push`) as documented in [Supabase: Database migrations](https://supabase.com/docs/guides/deployment/database-migrations).
 
 # Phased Plan
-- [ ] Phase 1: Migrate from Flyway to Supabase
-  - [ ] 1.1: Remove Flyway from CI/CD and developer docs; keep existing SQL files for conversion.
-  - [ ] 1.2: Install Supabase CLI locally and in CI; add `supabase/config.toml` and initialize project metadata (`supabase/`).
-    - [ ] 1.2.1: Authenticate CLI: `supabase login`.
-    - [ ] 1.2.2: Link repository to project: `supabase link` (stores project ref for CLI commands).
-  - [ ] 1.3: Create `supabase/migrations` directory; adopt timestamp naming `YYYYMMDDHHMMSS_description.sql`.
-  - [ ] 1.4: Convert existing Flyway files in `db/migrations` to Supabase timestamped files and move them to `supabase/migrations/` (preserve semantic order).
-    - [ ] 1.4.1: Ensure SQL is compatible with Supabase Postgres; fix any Flyway-specific directives.
-    - [ ] 1.4.2: Verify locally using CLI: apply via `supabase migration up` and validate with `supabase db reset` (clean re-apply without errors, correct schema state).
-  - [ ] 1.5: Deprecate and remove `db/migrations` after successful conversion; update references.
-  - [ ] 1.6: Link repository to Supabase project and enable DB Branches on PRs.
-    - [ ] 1.6.1: Configure CI secrets: `SUPABASE_ACCESS_TOKEN`, project `SUPABASE_PROJECT_REF`, and environment URLs/keys.
-    - [ ] 1.6.2: Grant least-privilege credentials for CI seeders.
-  - [ ] 1.7: Update `justfile` (or makefile/scripts) with tasks: `db:diff`, `db:reset`, `db:migrate`, `db:branch:status` that wrap Supabase CLI.
-  - [ ] 1.8: Replace any `flyway migrate` steps in pipelines with Supabase DB Branch workflow.
-  - [ ] 1.9: Add optional local seed file `supabase/seed.sql` strictly for developer convenience (local `supabase db reset`), keeping production baseline data in Golang seeders.
+- [x] Phase 1: Migrate from Flyway to Supabase
+  - [x] 1.1: Remove Flyway from CI/CD and developer docs; keep existing SQL files for conversion.
+  - [x] 1.2: Install Supabase CLI locally and in CI; add `supabase/config.toml` and initialize project metadata (`supabase/`).
+    - [x] 1.2.1: Authenticate CLI: `supabase login`.
+    - [x] 1.2.2: Link repository to project: `supabase link` (stores project ref for CLI commands).
+  - [x] 1.3: Create `supabase/migrations` directory; adopt timestamp naming `YYYYMMDDHHMMSS_description.sql`.
+  - [x] 1.4: Convert existing Flyway files in `db/migrations` to Supabase timestamped files and move them to `supabase/migrations/` (preserve semantic order).
+    - [x] 1.4.1: Ensure SQL is compatible with Supabase Postgres; fix any Flyway-specific directives.
+    - [x] 1.4.2: Verify locally using CLI: apply via `supabase migration up` and validate with `supabase db reset` (clean re-apply without errors, correct schema state).
+  - [x] 1.5: Deprecate and remove `db/migrations` after successful conversion; update references.
+  - [x] 1.6: Link repository to Supabase project and enable DB Branches on PRs.
+    - [x] 1.6.1: Configure CI secrets: `SUPABASE_ACCESS_TOKEN`, project `SUPABASE_PROJECT_REF`, and environment URLs/keys.
+    - [x] 1.6.2: Grant least-privilege credentials for CI seeders.
+  - [x] 1.7: Update `justfile` (or makefile/scripts) with tasks: `db:diff`, `db:reset`, `db:migrate`, `db:branch:status` that wrap Supabase CLI.
+  - [x] 1.8: Replace any `flyway migrate` steps in pipelines with Supabase DB Branch workflow.
+  - [x] 1.9: Add optional local seed file `supabase/seed.sql` strictly for developer convenience (local `supabase db reset`), keeping production baseline data in Golang seeders.
 
 - [ ] Phase 2: Establish Standardized Database Management Workflow
   - [ ] 2.1: Schema via Supabase Migrations

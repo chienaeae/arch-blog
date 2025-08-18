@@ -54,7 +54,6 @@ func (r *ThemeRepository) Create(ctx context.Context, theme *domain.Theme) error
 			pgtype.Timestamptz{Time: theme.UpdatedAt, Valid: true},
 		).
 		ToSql()
-
 	if err != nil {
 		return fmt.Errorf("ThemeRepository.Create: build query: %w", err)
 	}
@@ -81,7 +80,6 @@ func (r *ThemeRepository) Save(ctx context.Context, theme *domain.Theme) error {
 		Set("updated_at", pgtype.Timestamptz{Time: theme.UpdatedAt, Valid: true}).
 		Where(sq.Eq{"id": pgtype.UUID{Bytes: uuid.UUID(theme.ID), Valid: true}}).
 		ToSql()
-
 	if err != nil {
 		return fmt.Errorf("ThemeRepository.Save: build update query: %w", err)
 	}
@@ -109,7 +107,6 @@ func (r *ThemeRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		Delete("themes").
 		Where(sq.Eq{"id": pgtype.UUID{Bytes: id, Valid: true}}).
 		ToSql()
-
 	if err != nil {
 		return fmt.Errorf("ThemeRepository.Delete: build query: %w", err)
 	}
@@ -136,7 +133,6 @@ func (r *ThemeRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.T
 		From("themes").
 		Where(sq.Eq{"id": pgtype.UUID{Bytes: id, Valid: true}}).
 		ToSql()
-
 	if err != nil {
 		return nil, fmt.Errorf("ThemeRepository.FindByID: build query: %w", err)
 	}
@@ -163,7 +159,6 @@ func (r *ThemeRepository) FindBySlug(ctx context.Context, slug string) (*domain.
 		From("themes").
 		Where(sq.Eq{"slug": slug}).
 		ToSql()
-
 	if err != nil {
 		return nil, fmt.Errorf("ThemeRepository.FindBySlug: build query: %w", err)
 	}
@@ -197,7 +192,6 @@ func (r *ThemeRepository) LoadThemeWithArticles(ctx context.Context, id uuid.UUI
 		Where(sq.Eq{"ta.theme_id": pgtype.UUID{Bytes: id, Valid: true}}).
 		OrderBy("ta.position ASC").
 		ToSql()
-
 	if err != nil {
 		return nil, fmt.Errorf("ThemeRepository.LoadThemeWithArticles: build articles query: %w", err)
 	}
@@ -349,7 +343,6 @@ func (r *ThemeRepository) GetThemeCurator(ctx context.Context, themeID uuid.UUID
 		From("themes").
 		Where(sq.Eq{"id": pgtype.UUID{Bytes: themeID, Valid: true}}).
 		ToSql()
-
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("ThemeRepository.GetThemeCurator: build query: %w", err)
 	}
@@ -384,7 +377,6 @@ func (r *ThemeRepository) syncArticles(ctx context.Context, themeID uuid.UUID, d
 		From("theme_articles").
 		Where(sq.Eq{"theme_id": pgtype.UUID{Bytes: themeID, Valid: true}}).
 		ToSql()
-
 	if err != nil {
 		return fmt.Errorf("syncArticles: build select query: %w", err)
 	}
@@ -451,7 +443,7 @@ func (r *ThemeRepository) syncArticles(ctx context.Context, themeID uuid.UUID, d
 	// Insert new articles and update existing ones
 	for postID, article := range desiredMap {
 		current, exists := currentArticles[postID]
-		
+
 		if !exists {
 			// Insert new article
 			insQuery, insArgs, err := r.SB.
@@ -547,7 +539,6 @@ func scanTheme(row pgx.Row) (*domain.Theme, error) {
 
 	return &theme, nil
 }
-
 
 // scanThemeSummaryFromRows scans a theme summary from pgx.Rows
 func scanThemeSummaryFromRows(rows pgx.Rows) (*ports.ThemeSummary, error) {

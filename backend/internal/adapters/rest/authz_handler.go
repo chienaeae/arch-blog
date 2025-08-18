@@ -25,7 +25,6 @@ func NewAuthzHandler(base *BaseHandler, service *application.AuthzService) *Auth
 	}
 }
 
-
 // ListPermissions returns all available permissions in the system
 func (h *AuthzHandler) ListPermissions(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -241,7 +240,7 @@ func (h *AuthzHandler) AssignRoleToUser(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	// Convert openapi UUID to google UUID 
+	// Convert openapi UUID to google UUID
 	roleUUID := uuid.UUID(req.RoleId)
 
 	// Assign the role
@@ -310,4 +309,3 @@ func (h *AuthzHandler) mapDomainRoleToAPI(role *domain.Role) api.Role {
 		UpdatedAt:   role.UpdatedAt,
 	}
 }
-

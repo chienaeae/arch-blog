@@ -9,13 +9,13 @@ import (
 
 // Theme event topics
 const (
-	ThemeCreatedTopic        eventbus.Topic = "themes.created"
-	ThemeUpdatedTopic        eventbus.Topic = "themes.updated"
-	ThemeActivatedTopic      eventbus.Topic = "themes.activated"
-	ThemeDeactivatedTopic    eventbus.Topic = "themes.deactivated"
-	ThemeDeletedTopic        eventbus.Topic = "themes.deleted"
-	ThemeArticleAddedTopic   eventbus.Topic = "themes.article.added"
-	ThemeArticleRemovedTopic eventbus.Topic = "themes.article.removed"
+	ThemeCreatedTopic           eventbus.Topic = "themes.created"
+	ThemeUpdatedTopic           eventbus.Topic = "themes.updated"
+	ThemeActivatedTopic         eventbus.Topic = "themes.activated"
+	ThemeDeactivatedTopic       eventbus.Topic = "themes.deactivated"
+	ThemeDeletedTopic           eventbus.Topic = "themes.deleted"
+	ThemeArticleAddedTopic      eventbus.Topic = "themes.article.added"
+	ThemeArticleRemovedTopic    eventbus.Topic = "themes.article.removed"
 	ThemeArticlesReorderedTopic eventbus.Topic = "themes.articles.reordered"
 )
 

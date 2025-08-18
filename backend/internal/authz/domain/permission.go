@@ -45,7 +45,7 @@ func NewPermissionFromID(permissionID, description string) (*Permission, error) 
 	if resource == "" || action == "" {
 		return nil, fmt.Errorf("%w: %s", ErrInvalidPermissionID, permissionID)
 	}
-	
+
 	return NewPermission(resource, action, scope, description), nil
 }
 
@@ -95,7 +95,7 @@ func (p *Permission) Matches(resource, action string) bool {
 // ParsePermissionID parses a permission ID string into its components
 func ParsePermissionID(permissionID string) (resource, action, scope string) {
 	parts := strings.Split(permissionID, ":")
-	
+
 	switch len(parts) {
 	case 2:
 		// Format: "resource:action"

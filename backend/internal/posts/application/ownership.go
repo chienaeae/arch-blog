@@ -37,7 +37,7 @@ func (p *PostsOwnershipChecker) CheckOwnership(ctx context.Context, userID uuid.
 		p.logger.Error(ctx, "failed to get post author", "error", err, "postID", resourceID)
 		return false, err
 	}
-	
+
 	return authorID == userID, nil
 }
 

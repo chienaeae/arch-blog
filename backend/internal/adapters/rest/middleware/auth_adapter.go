@@ -43,7 +43,7 @@ func NewAuthAdapter(userRepo ports.UserRepository, logger logger.Logger) *AuthAd
 func (a *AuthAdapter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		
+
 		// Get the subject (Supabase ID) from JWT middleware
 		subject, ok := GetJWTUserID(ctx)
 		if !ok {
@@ -51,7 +51,7 @@ func (a *AuthAdapter) Middleware(next http.Handler) http.Handler {
 			WriteJSONError(w, ErrorCodeUnauthorized, "Authentication required", http.StatusUnauthorized)
 			return
 		}
-		
+
 		// Look up the user by Supabase ID to get our internal UUID
 		user, err := a.userRepo.FindBySupabaseID(ctx, subject)
 		if err != nil {
@@ -62,7 +62,7 @@ func (a *AuthAdapter) Middleware(next http.Handler) http.Handler {
 			WriteJSONError(w, ErrorCodeNotFound, "User profile not found", http.StatusNotFound)
 			return
 		}
-		
+
 		// Parse the user ID string to UUID and set it in context for authorization middleware
 		userUUID, err := uuid.Parse(user.ID)
 		if err != nil {
@@ -74,12 +74,12 @@ func (a *AuthAdapter) Middleware(next http.Handler) http.Handler {
 			return
 		}
 		ctx = SetUserID(ctx, userUUID)
-		
+
 		// Also preserve the email if needed
 		if email, ok := GetJWTUserEmail(ctx); ok {
 			ctx = context.WithValue(ctx, UserEmailKey, email)
 		}
-		
+
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

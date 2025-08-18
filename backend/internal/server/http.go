@@ -20,7 +20,6 @@ func NewHTTPServer(
 	authAdapter *middleware.AuthAdapter,
 	log logger.Logger,
 ) *http.Server {
-
 	// Create chi router
 	r := chi.NewRouter()
 
@@ -29,7 +28,7 @@ func NewHTTPServer(
 		wrapMiddleware(jwtMiddleware.Middleware),
 		wrapMiddleware(authAdapter.Middleware), // Convert Supabase ID to internal UUID
 	}
-	
+
 	// JWT-only endpoints (no AuthAdapter because user doesn't exist yet)
 	jwtOnlyMiddlewares := []api.MiddlewareFunc{
 		wrapMiddleware(jwtMiddleware.Middleware),
@@ -84,26 +83,26 @@ func NewHTTPServer(
 		"PUT /api/v1/roles/{id}/permissions": createAuthzMiddleware("authz:roles:update"),
 
 		// User role management
-		"GET /api/v1/users/{id}/roles":            createAuthzMiddleware("authz:users:read"),
-		"POST /api/v1/users/{id}/roles":           createAuthzMiddleware("authz:users:assign"),
+		"GET /api/v1/users/{id}/roles":             createAuthzMiddleware("authz:users:read"),
+		"POST /api/v1/users/{id}/roles":            createAuthzMiddleware("authz:users:assign"),
 		"DELETE /api/v1/users/{id}/roles/{roleId}": createAuthzMiddleware("authz:users:revoke"),
 
 		// Posts endpoints (mutation requires authorization)
 		"POST /api/v1/posts":                createAuthzMiddleware("posts:create"),
-		"PUT /api/v1/posts/{id}":           createOwnershipMiddleware("posts", "id", "update"),
-		"POST /api/v1/posts/{id}/publish":  createOwnershipMiddleware("posts", "id", "publish"),
+		"PUT /api/v1/posts/{id}":            createOwnershipMiddleware("posts", "id", "update"),
+		"POST /api/v1/posts/{id}/publish":   createOwnershipMiddleware("posts", "id", "publish"),
 		"POST /api/v1/posts/{id}/unpublish": createOwnershipMiddleware("posts", "id", "publish"),
-		"POST /api/v1/posts/{id}/archive":  createOwnershipMiddleware("posts", "id", "archive"),
-		"DELETE /api/v1/posts/{id}":        createOwnershipMiddleware("posts", "id", "delete"),
+		"POST /api/v1/posts/{id}/archive":   createOwnershipMiddleware("posts", "id", "archive"),
+		"DELETE /api/v1/posts/{id}":         createOwnershipMiddleware("posts", "id", "delete"),
 
 		// Themes endpoints (mutation requires authorization)
-		"POST /api/v1/themes":                        createAuthzMiddleware("themes:create"),
-		"PUT /api/v1/themes/{id}":                    createOwnershipMiddleware("themes", "id", "update"),
-		"POST /api/v1/themes/{id}/activate":          createOwnershipMiddleware("themes", "id", "update"),
-		"POST /api/v1/themes/{id}/deactivate":        createOwnershipMiddleware("themes", "id", "update"),
-		"POST /api/v1/themes/{id}/articles":          createOwnershipMiddleware("themes", "id", "update"),
+		"POST /api/v1/themes":                          createAuthzMiddleware("themes:create"),
+		"PUT /api/v1/themes/{id}":                      createOwnershipMiddleware("themes", "id", "update"),
+		"POST /api/v1/themes/{id}/activate":            createOwnershipMiddleware("themes", "id", "update"),
+		"POST /api/v1/themes/{id}/deactivate":          createOwnershipMiddleware("themes", "id", "update"),
+		"POST /api/v1/themes/{id}/articles":            createOwnershipMiddleware("themes", "id", "update"),
 		"DELETE /api/v1/themes/{id}/articles/{postId}": createOwnershipMiddleware("themes", "id", "update"),
-		"PUT /api/v1/themes/{id}/articles":           createOwnershipMiddleware("themes", "id", "update"),
+		"PUT /api/v1/themes/{id}/articles":             createOwnershipMiddleware("themes", "id", "update"),
 	}
 
 	// Register API routes on chi router with a route-aware middleware

@@ -61,7 +61,6 @@ backend/
 
 ### Database
 - **pgx/v5**: Direct PostgreSQL driver with native types
-- **Flyway**: Migrations in `db/migrations/`
 - **Best Practices**:
   - Use `pgtype.UUID`, `pgtype.Text`, `pgtype.Timestamptz`
   - Defer rollback: `defer func() { _ = tx.Rollback(ctx) }()`

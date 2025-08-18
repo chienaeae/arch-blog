@@ -32,20 +32,20 @@ func (h *BaseHandler) WriteJSONError(w http.ResponseWriter, r *http.Request, cod
 func (h *BaseHandler) writeJSONError(w http.ResponseWriter, r *http.Request, code string, message string, statusCode int, details map[string]any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	
+
 	// Create base error response
 	errorResp := map[string]any{
 		"error":   code,
 		"message": message,
 	}
-	
+
 	// Add details if provided
 	for k, v := range details {
 		errorResp[k] = v
 	}
-	
+
 	if err := json.NewEncoder(w).Encode(errorResp); err != nil {
-		h.logger.Error(r.Context(), "failed to encode error response", 
+		h.logger.Error(r.Context(), "failed to encode error response",
 			"error", err,
 			"error_code", code,
 			"status_code", statusCode,
@@ -56,7 +56,7 @@ func (h *BaseHandler) writeJSONError(w http.ResponseWriter, r *http.Request, cod
 // HandleError is a generic error handler that translates AppError into JSON responses
 func (h *BaseHandler) HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	var appErr *apperror.AppError
-	
+
 	if errors.As(err, &appErr) {
 		// The error is a known business error
 		details := map[string]any{
@@ -65,7 +65,7 @@ func (h *BaseHandler) HandleError(w http.ResponseWriter, r *http.Request, err er
 		if appErr.Details != nil {
 			details["context"] = appErr.Details
 		}
-		
+
 		h.writeJSONError(w, r, string(appErr.Code), appErr.Message, appErr.HTTPStatus, details)
 	} else {
 		// It's an unexpected error. Log it and return a generic 500 response
@@ -78,9 +78,9 @@ func (h *BaseHandler) HandleError(w http.ResponseWriter, r *http.Request, err er
 func (h *BaseHandler) WriteJSONResponse(w http.ResponseWriter, r *http.Request, data interface{}, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	
+
 	if err := json.NewEncoder(w).Encode(data); err != nil {
-		h.logger.Error(r.Context(), "failed to encode response", 
+		h.logger.Error(r.Context(), "failed to encode response",
 			"error", err,
 			"status_code", statusCode,
 		)

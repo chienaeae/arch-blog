@@ -32,7 +32,7 @@ func NewAuthzRepository(db *pgxpool.Pool) *AuthzRepository {
 func (r *AuthzRepository) HasPermission(ctx context.Context, userID uuid.UUID, permissionID string) (bool, error) {
 	// Parse the permission ID to get components
 	resource, action, scope := domain.ParsePermissionID(permissionID)
-	
+
 	query := `
 		SELECT EXISTS (
 			-- Check permissions from roles
@@ -106,7 +106,7 @@ func (r *AuthzRepository) HasAnyPermission(ctx context.Context, userID uuid.UUID
 		resourceArg := argCount
 		argCount++
 		actionArg := argCount
-		
+
 		if scope == "" {
 			conditions = append(conditions, fmt.Sprintf(
 				"(user_perms.resource = $%d AND user_perms.action = $%d AND user_perms.scope IS NULL)",
@@ -211,7 +211,7 @@ func (r *AuthzRepository) GetUserPermissionIDs(ctx context.Context, userID uuid.
 		if err := rows.Scan(&resource, &action, &scope); err != nil {
 			return nil, fmt.Errorf("failed to scan permission: %w", err)
 		}
-		
+
 		// Build the permission ID string
 		permID := resource + ":" + action
 		if scope.Valid && scope.String != "" {
@@ -290,7 +290,7 @@ func (r *AuthzRepository) GetPermissionByID(ctx context.Context, id uuid.UUID) (
 func (r *AuthzRepository) GetPermissionByIDString(ctx context.Context, permissionID string) (*domain.Permission, error) {
 	// Parse the permission ID to get components
 	resource, action, scope := domain.ParsePermissionID(permissionID)
-	
+
 	query := `
 		SELECT id, resource, action, scope, description, created_at, updated_at
 		FROM permissions

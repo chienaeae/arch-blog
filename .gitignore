@@ -35,6 +35,7 @@ Thumbs.db
 *.log
 
 # Dependency directories
+node_modules/
 vendor/
 
 # Build directories

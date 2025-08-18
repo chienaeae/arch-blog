@@ -33,5 +33,7 @@ func (a *AuthzAdapter) Can(ctx context.Context, userID uuid.UUID, resource strin
 }
 
 // Compile-time checks to ensure we implement the interfaces
-var _ postsPorts.Authorizer = (*AuthzAdapter)(nil)
-var _ themesPorts.Authorizer = (*AuthzAdapter)(nil)
+var (
+	_ postsPorts.Authorizer  = (*AuthzAdapter)(nil)
+	_ themesPorts.Authorizer = (*AuthzAdapter)(nil)
+)

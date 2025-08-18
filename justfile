@@ -76,3 +76,29 @@ install-tools:
     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
     go install github.com/google/wire/cmd/wire@latest
     @echo "✅ Development tools installed!"
+
+# Frontend commands
+frontend-install:
+    cd frontend && pnpm install
+
+frontend-check:
+    cd frontend && pnpm check
+
+frontend-lint:
+    cd frontend && pnpm turbo run lint
+
+frontend-format:
+    cd frontend && pnpm turbo run format
+
+frontend-build:
+    cd frontend && pnpm turbo run build
+
+frontend-dev:
+    cd frontend && pnpm turbo run dev --parallel
+
+frontend-turbo task:
+    cd frontend && pnpm turbo run {{task}}
+
+frontend-clean:
+    rm -rf frontend/**/node_modules frontend/.turbo frontend/apps/**/.next frontend/apps/**/dist
+    @echo "✅ Frontend cleaned"

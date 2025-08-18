@@ -1,7 +1,7 @@
 ---
 AIP-ID: 002
 Title: Frontend Monorepo Architecture for Arch Blog
-Status: READY
+Status: IN_PROGRESS
 Version: 1.0
 Last-Updated: 2025-08-18
 ---
@@ -20,45 +20,45 @@ Establish a modern, scalable, and developer-efficient frontend monorepo architec
   - Comprehensive testing: Unit / Component / E2E layered strategy integrated with CI/CD and caching.
 
 # Phased Plan
-- [ ] Phase 1: Laying the Foundation
-  - [ ] 1.1: Initialize the monorepo
-    - [ ] 1.1.1: In `frontend/`, initialize `package.json` (`pnpm init -y`).
-    - [ ] 1.1.2: Create `pnpm-workspace.yaml` including `apps/*` and `packages/*`.
-    - [ ] 1.1.3: Create `.gitignore` (ignore `node_modules`, `.turbo`, `.next`, `dist`, `coverage`).
-  - [ ] 1.2: Introduce code quality tool (Biome)
-    - [ ] 1.2.1: Install `@biomejs/biome` as a root devDependency.
-    - [ ] 1.2.2: Create root `biome.json` with lint/format rules (JS/TS/JSON/Markdown).
-    - [ ] 1.2.3: Add root scripts: `check`, `lint`, `format` in `package.json`.
-  - [ ] 1.3: Establish shared TypeScript configuration
-    - [ ] 1.3.1: Create `packages/tsconfig` package (`package.json` name: `@arch/tsconfig`).
-    - [ ] 1.3.2: Add `base.json` (`strict: true`, `composite: true`, `skipLibCheck: true`, `moduleResolution: bundler`, etc.).
-    - [ ] 1.3.3: Provide `react-library.json`, `next-app.json`, `vite-app.json` presets.
-  - [ ] 1.4: Integrate Turborepo
-    - [ ] 1.4.1: Install `turbo` (root).
-    - [ ] 1.4.2: Add `turbo.json` defining `build`, `dev`, `lint`, `test`, `check` pipelines and caching.
-    - [ ] 1.4.3: Add root scripts that proxy to `turbo run <task>`.
-  - [ ] 1.5: Scaffold directories and basic package manifests
-    - [ ] 1.5.1: Create directories: `apps/web-blog`, `apps/admin-panel`, `apps/storybook`, `apps/e2e`; and `packages/ui`, `packages/hooks`, `packages/utils`, `packages/api-client`, `packages/tsconfig`.
-    - [ ] 1.5.2: For each `apps/*` and `packages/*`, create a minimal `package.json` (`name`, `version`, `private`, `type: module`).
-    - [ ] 1.5.3: Set root engines for Node 20 LTS and a pnpm version range.
-  - [ ] 1.6: Baseline acceptance (empty builds allowed)
-    - [ ] 1.6.1: `pnpm install` succeeds.
-    - [ ] 1.6.2: `pnpm check` (Biome) succeeds.
-    - [ ] 1.6.3: `pnpm turbo build` succeeds (even with empty builds).
-  - [ ] 1.7: Justfile updates (initial, in repo root `justfile`)
-    - [ ] 1.7.1: Add `frontend:install` → `cd frontend && pnpm install`.
-    - [ ] 1.7.2: Add `frontend:check` → `cd frontend && pnpm check`.
-    - [ ] 1.7.3: Add `frontend:lint` → `cd frontend && pnpm turbo run lint`.
-    - [ ] 1.7.4: Add `frontend:format` → `cd frontend && pnpm turbo run format`.
-    - [ ] 1.7.5: Add `frontend:build` → `cd frontend && pnpm turbo run build`.
-    - [ ] 1.7.6: Add `frontend:dev` → `cd frontend && pnpm turbo run dev --parallel`.
-    - [ ] 1.7.7: Add `frontend:turbo task=<task>` → `cd frontend && pnpm turbo run {{task}}`.
-    - [ ] 1.7.8: Add `frontend:clean` → remove `frontend/**/node_modules`, `frontend/.turbo`, `frontend/apps/**/.next`, `frontend/apps/**/dist`.
-  - [ ] 1.8: GitHub Actions updates (frontend workflow skeleton)
-    - [ ] 1.8.1: Create `.github/workflows/frontend-ci.yml`.
-    - [ ] 1.8.2: Triggers: `push`/`pull_request` on `main` with path filters: `frontend/**`, `schema/api.yaml`, `.github/workflows/frontend-ci.yml`.
-    - [ ] 1.8.3: Concurrency: `${{ github.workflow }}-${{ github.ref }}` with `cancel-in-progress: true`.
-    - [ ] 1.8.4: Add job `check`: Node 20 + `pnpm@9`, install in `frontend/`, run `pnpm check` (Biome).
+- [x] Phase 1: Laying the Foundation
+  - [x] 1.1: Initialize the monorepo
+    - [x] 1.1.1: In `frontend/`, initialize `package.json` (`pnpm init -y`).
+    - [x] 1.1.2: Create `pnpm-workspace.yaml` including `apps/*` and `packages/*`.
+    - [x] 1.1.3: Create `.gitignore` (ignore `node_modules`, `.turbo`, `.next`, `dist`, `coverage`).
+  - [x] 1.2: Introduce code quality tool (Biome)
+    - [x] 1.2.1: Install `@biomejs/biome` as a root devDependency.
+    - [x] 1.2.2: Create root `biome.json` with lint/format rules (JS/TS/JSON/Markdown).
+    - [x] 1.2.3: Add root scripts: `check`, `lint`, `format` in `package.json`.
+  - [x] 1.3: Establish shared TypeScript configuration
+    - [x] 1.3.1: Create `packages/tsconfig` package (`package.json` name: `@arch/tsconfig`).
+    - [x] 1.3.2: Add `base.json` (`strict: true`, `composite: true`, `skipLibCheck: true`, `moduleResolution: bundler`, etc.).
+    - [x] 1.3.3: Provide `react-library.json`, `next-app.json`, `vite-app.json` presets.
+  - [x] 1.4: Integrate Turborepo
+    - [x] 1.4.1: Install `turbo` (root).
+    - [x] 1.4.2: Add `turbo.json` defining `build`, `dev`, `lint`, `test`, `check` pipelines and caching.
+    - [x] 1.4.3: Add root scripts that proxy to `turbo run <task>`.
+  - [x] 1.5: Scaffold directories and basic package manifests
+    - [x] 1.5.1: Create directories: `apps/web-blog`, `apps/admin-panel`, `apps/storybook`, `apps/e2e`; and `packages/ui`, `packages/hooks`, `packages/utils`, `packages/api-client`, `packages/tsconfig`.
+    - [x] 1.5.2: For each `apps/*` and `packages/*`, create a minimal `package.json` (`name`, `version`, `private`, `type: module`).
+    - [x] 1.5.3: Set root engines for Node 20 LTS and a pnpm version range.
+  - [x] 1.6: Baseline acceptance (empty builds allowed)
+    - [x] 1.6.1: `pnpm install` succeeds.
+    - [x] 1.6.2: `pnpm check` (Biome) succeeds.
+    - [x] 1.6.3: `pnpm turbo build` succeeds (even with empty builds).
+  - [x] 1.7: Justfile updates (initial, in repo root `justfile`)
+    - [x] 1.7.1: Add `frontend:install` → `cd frontend && pnpm install`.
+    - [x] 1.7.2: Add `frontend:check` → `cd frontend && pnpm check`.
+    - [x] 1.7.3: Add `frontend:lint` → `cd frontend && pnpm turbo run lint`.
+    - [x] 1.7.4: Add `frontend:format` → `cd frontend && pnpm turbo run format`.
+    - [x] 1.7.5: Add `frontend:build` → `cd frontend && pnpm turbo run build`.
+    - [x] 1.7.6: Add `frontend:dev` → `cd frontend && pnpm turbo run dev --parallel`.
+    - [x] 1.7.7: Add `frontend:turbo task=<task>` → `cd frontend && pnpm turbo run {{task}}`.
+    - [x] 1.7.8: Add `frontend:clean` → remove `frontend/**/node_modules`, `frontend/.turbo`, `frontend/apps/**/.next`, `frontend/apps/**/dist`.
+  - [x] 1.8: GitHub Actions updates (frontend workflow skeleton)
+    - [x] 1.8.1: Create `.github/workflows/frontend-ci.yml`.
+    - [x] 1.8.2: Triggers: `push`/`pull_request` on `main` with path filters: `frontend/**`, `schema/api.yaml`, `.github/workflows/frontend-ci.yml`.
+    - [x] 1.8.3: Concurrency: `${{ github.workflow }}-${{ github.ref }}` with `cancel-in-progress: true`.
+    - [x] 1.8.4: Add job `check`: Node 20 + `pnpm@9`, install in `frontend/`, run `pnpm check` (Biome).
 
 - [ ] Phase 2: Component-driven development and core UI
   - [ ] 2.1: Create the UI package (`packages/ui`)
@@ -203,10 +203,10 @@ frontend/
   - Remote caching via Turborepo is allowed; do not commit cache artifacts.
 
 # Definition of Done (DoD)
-- [ ] Phase 1 outputs:
-  - [ ] Root `pnpm install` succeeds; `pnpm check` passes; `pnpm turbo build` succeeds.
-  - [ ] Directory scaffold and shared TS configs are in place; Turborepo pipelines run.
-  - [ ] Frontend CI workflow exists with `check` job, concurrency, and path filters.
+- [x] Phase 1 outputs:
+  - [x] Root `pnpm install` succeeds; `pnpm check` passes; `pnpm turbo build` succeeds.
+  - [x] Directory scaffold and shared TS configs are in place; Turborepo pipelines run.
+  - [x] Frontend CI workflow exists with `check` job, concurrency, and path filters.
 - [ ] Phase 2 outputs:
   - [ ] Storybook displays and interacts with `packages/ui` components; Tailwind styles apply.
   - [ ] `apps/web-blog` renders shared UI components successfully.

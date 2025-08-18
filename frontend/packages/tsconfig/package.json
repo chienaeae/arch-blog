@@ -1,0 +1,11 @@
+{
+  "name": "@arch/tsconfig",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "base.json",
+    "next-app.json",
+    "vite-app.json",
+    "react-library.json"
+  ]
+}

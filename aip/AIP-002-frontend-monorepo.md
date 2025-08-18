@@ -66,22 +66,36 @@ Establish a modern, scalable, and developer-efficient frontend monorepo architec
     - [ ] 2.1.2: Configure `tailwind.config.ts` and `postcss.config.js`; import design tokens (colors/spacing/typography).
     - [ ] 2.1.3: Implement base components: `Button`, `Input`, `Card`; export via `index.ts`.
     - [ ] 2.1.4: Set `tsconfig` to extend `@arch/tsconfig/react-library.json`.
+    - [ ] 2.1.5: Add shadcn/ui CLI to the workspace and configure it to generate components into `packages/ui` (source-owned model), keeping `components.json` in `packages/ui`.
+    - [ ] 2.1.6: Install and configure Radix UI primitives and utilities used by shadcn/ui.
+    - [ ] 2.1.7: Add utility libraries used by shadcn/ui patterns: `class-variance-authority` and `tailwind-merge`.
+    - [ ] 2.1.8: Use the CLI to scaffold initial primitives (e.g., `button`, `input`, `card`) into `packages/ui/src/components/*` and re-export from `packages/ui/src/index.ts`.
+    - [ ] 2.1.9: Establish theming support in `packages/ui` (e.g., `ThemeProvider`, `ThemeToggle`) leveraging Tailwind and Radix where relevant.
+    - [ ] 2.1.10: Document customization/ownership policy in `packages/ui/README.md` (components are first-party code; updates via CLI are curated and can be modified).
   - [ ] 2.2: Configure Storybook (`apps/storybook`)
     - [ ] 2.2.1: Initialize Storybook (React + Vite).
     - [ ] 2.2.2: Configure `main.ts` to load `packages/ui/**/*.stories.@(ts|tsx)`; enable addons (controls, actions, interactions, a11y).
     - [ ] 2.2.3: Integrate Tailwind by importing global styles in Storybook preview.
     - [ ] 2.2.4: Author stories for `Button`, `Input`, `Card`, covering key props and interactions.
+    - [ ] 2.2.5: Showcase shadcn/ui-derived components with variants (from `class-variance-authority`) and composition examples.
+    - [ ] 2.2.6: Add a theming story using `ThemeProvider` and `ThemeToggle` from `packages/ui`.
+    - [ ] 2.2.7: Ensure Radix-based components render correctly; run Storybook a11y checks on these stories.
   - [ ] 2.3: Initialize the main app (`apps/web-blog`)
     - [ ] 2.3.1: Bootstrap with `create-next-app` (App Router, TS, ESLint off, using Biome instead).
     - [ ] 2.3.2: Integrate Tailwind; configure `content` to include both `packages/ui` and `apps/web-blog`.
     - [ ] 2.3.3: Import `Button` from `packages/ui` and render it on the home page to validate workspace linking.
+    - [ ] 2.3.4: Wire `ThemeProvider` from `packages/ui` at the app root and render a `ThemeToggle` to validate theming.
+    - [ ] 2.3.5: Validate Radix-based interactions (e.g., focus states) and Tailwind classes from `packages/ui` apply correctly in Next.js.
   - [ ] 2.4: Acceptance
     - [ ] 2.4.1: Storybook starts and all `packages/ui` components are interactive.
     - [ ] 2.4.2: `apps/web-blog` renders shared components; Tailwind styles apply correctly.
+    - [ ] 2.4.3: The UI components exist as first-party source within `packages/ui` (not consumed as a node_modules dependency).
+    - [ ] 2.4.4: A11y checks for Radix/shadcn-derived components pass in Storybook (no critical violations).
   - [ ] 2.5: Justfile updates (storybook and UI)
     - [ ] 2.5.1: Add `frontend:storybook` → `cd frontend && pnpm --filter @apps/storybook dev`.
     - [ ] 2.5.2: Add `frontend:storybook:build` → `cd frontend && pnpm --filter @apps/storybook build` (or `storybook build`).
     - [ ] 2.5.3: Add `frontend:ui:build` → `cd frontend && pnpm --filter @arch/ui build`.
+    - [ ] 2.5.4: Add `frontend:ui:add component=<name>` → generate a new component into `packages/ui` via shadcn CLI (e.g., `cd frontend/packages/ui && pnpm dlx shadcn-ui@latest add {{component}}`).
   - [ ] 2.6: GitHub Actions updates (storybook and build)
     - [ ] 2.6.1: Add job `build`: Node 20 + `pnpm@9`, cache `frontend/.turbo`, run `pnpm turbo run build`.
     - [ ] 2.6.2: Add job `storybook`: run `pnpm --filter @apps/storybook build`; optionally publish to Chromatic if `CHROMATIC_PROJECT_TOKEN` is present.
